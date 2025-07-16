@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     borderRadius: borderRadius(12),
     alignItems: 'center',
-    flex: 1,
-    marginHorizontal: wp(1),
+    width: wp(44),
     paddingVertical: hp(2),
     marginBottom: hp(1),
+  
   },
   iconCircle: {
     width: wp(10),

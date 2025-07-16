@@ -13,9 +13,15 @@ interface SectionProps {
   title: string;
   data: Array<{ id: string; name: string; price: string; icon: string }>;
   onViewAll?: () => void;
+  onStockPress?: (item: {
+    id: string;
+    name: string;
+    price: string;
+    icon: string;
+  }) => void;
 }
 
-const Section = ({ title, data, onViewAll }: SectionProps) => (
+const Section = ({ title, data, onViewAll, onStockPress }: SectionProps) => (
   <View style={styles.sectionContainer}>
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -29,7 +35,9 @@ const Section = ({ title, data, onViewAll }: SectionProps) => (
       numColumns={2}
       columnWrapperStyle={styles.row}
       renderItem={({ item }) => (
-        <StockCard icon={item.icon} name={item.name} price={item.price} />
+        <TouchableOpacity onPress={() => onStockPress && onStockPress(item)}>
+          <StockCard icon={item.icon} name={item.name} price={item.price} />
+        </TouchableOpacity>
       )}
       scrollEnabled={false}
     />

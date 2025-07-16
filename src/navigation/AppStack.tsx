@@ -3,16 +3,21 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from '../screens/home';
+import ViewAll from '../screens/viewall';
+import Details from '../screens/details';
 
 const Stack = createNativeStackNavigator();
 
 const AppStack = () => {
   return (
-
-      <Stack.Navigator initialRouteName="HomeScreen" screenOptions={{headerShown: false}}>
-        <Stack.Screen name="HomeScreen" component={Home} />
-      </Stack.Navigator>
-  
+    <Stack.Navigator
+      initialRouteName="HomeScreen"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="HomeScreen" component={Home} />
+      <Stack.Screen name="ViewAll" component={ViewAll} />
+      <Stack.Screen name="Details" component={Details} />
+    </Stack.Navigator>
   );
 };
 
