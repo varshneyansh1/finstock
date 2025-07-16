@@ -46,19 +46,27 @@ const DUMMY_STOCK = {
 
 const TIME_RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y'];
 
-// Dummy data for main price chart
+// Example: More realistic dummy data for a stock line
 const DUMMY_CHART_DATA = [
-  { value: 175 },
+  { value: 175, label: '09:31 AM' },
+  { value: 174.5 },
+  { value: 175.2 },
   { value: 176 },
-  { value: 177 },
-  { value: 178 },
-  { value: 177.5 },
-  { value: 177 },
-  { value: 176.5 },
-  { value: 177 },
+  { value: 177, label: '11:00 AM' },
+  { value: 176.2 },
+  { value: 177.8 },
+  { value: 178.5 },
+  { value: 177.9, label: '12:48 PM' },
   { value: 177.2 },
-  { value: 177.15 },
+  { value: 176.7 },
+  { value: 177.1 },
+  { value: 177.5 },
+  { value: 177.2 },
+  { value: 176.6 },
+  { value: 177.15, label: '02:58 PM' },
 ];
+
+const yAxisLabels = ['$174', '$176', '$178'];
 
 // Dummy data for 52-week low/high chart
 const DUMMY_52WEEK_DATA = [
@@ -69,28 +77,34 @@ const DUMMY_52WEEK_DATA = [
 
 // Modular chart component for main price chart
 const StockLineChart = ({ data }: { data: any[] }) => (
-  <LineChart
-    data={data}
-    height={hp(18)}
-    width={wp(85)}
-    isAnimated
-    color="#d35400"
-    thickness={2}
-    hideDataPoints
-    xAxisColor="transparent"
-    yAxisColor="transparent"
-    noOfSections={4}
-    areaChart
-    startFillColor="#fbeee0"
-    endFillColor="#fff"
-    startOpacity={0.5}
-    endOpacity={0.1}
-    yAxisTextStyle={{ color: 'transparent' }}
-    xAxisLabelTextStyle={{ color: 'transparent' }}
-    initialSpacing={0}
-    spacing={wp(7)}
-    disableScroll
-  />
+  <View style={{ width: '100%', alignItems: 'center', overflow: 'hidden' }}>
+    <LineChart
+      data={data}
+      height={hp(18)}
+      width={wp(92)}
+      isAnimated
+      color="#d35400"
+      thickness={2}
+      hideDataPoints
+      xAxisColor="#eee"
+      yAxisColor="#eee"
+      noOfSections={2}
+      areaChart
+      startFillColor="#fbeee0"
+      endFillColor="#fff"
+      startOpacity={0.5}
+      endOpacity={0.1}
+      yAxisTextStyle={{ color: '#888', fontSize: fontSize(12) }}
+      xAxisLabelTextStyle={{ color: '#888', fontSize: fontSize(12) }}
+      initialSpacing={0}
+      spacing={wp(4)}
+      disableScroll
+      showVerticalLines={false}
+      showXAxisIndices
+      showYAxisIndices
+      yAxisLabelTexts={yAxisLabels}
+    />
+  </View>
 );
 
 // Modular chart for 52-week low/high
@@ -120,6 +134,42 @@ const WeekRangeChart = ({ data }: { data: any[] }) => (
     <Text style={styles.weekRangeLabel}>52-Week High</Text>
   </View>
 );
+
+// Custom 52-week range bar with center marker for current price (matches design)
+const WeekRangeBar = ({
+  low,
+  current,
+  high,
+}: {
+  low: number;
+  current: number;
+  high: number;
+}) => {
+  return (
+    <View style={styles.rangeBarContainer}>
+      {/* Left label */}
+      <View style={styles.rangeLabelCol}>
+        <Text style={styles.rangeLabelTitle}>52-Week Low</Text>
+        <Text style={styles.rangeLabelValue}>${low}</Text>
+      </View>
+      {/* Center marker and line */}
+      <View style={styles.rangeBarCenterWrapper}>
+        <View style={styles.currentPriceWrapper}>
+          <Text style={styles.currentPriceValue}>
+            Current price: ${current}
+          </Text>
+          <Text style={styles.currentPriceMarker}>▼</Text>
+        </View>
+        <View style={styles.rangeBar} />
+      </View>
+      {/* Right label */}
+      <View style={styles.rangeLabelCol}>
+        <Text style={styles.rangeLabelTitle}>52-Week High</Text>
+        <Text style={styles.rangeLabelValue}>${high}</Text>
+      </View>
+    </View>
+  );
+};
 
 const Details = () => {
   const route = useRoute();
@@ -212,11 +262,11 @@ const Details = () => {
             </View>
           ))}
         </View>
-        {/* 52-Week Range Chart */}
-        <WeekRangeChart data={DUMMY_52WEEK_DATA} />
+        {/* 52-Week Range Bar (center marker) */}
+        <WeekRangeBar low={123.64} current={177.15} high={197.96} />
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          {DUMMY_STOCK.stats.map((stat, idx) => (
+          {DUMMY_STOCK.stats.slice(3).map((stat, idx) => (
             <View key={stat.label} style={styles.statItem}>
               <Text style={styles.statLabel}>{stat.label}</Text>
               <Text style={styles.statValue}>{stat.value}</Text>
@@ -299,6 +349,8 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
     borderWidth: 1,
     borderColor: '#f0f0f0',
+    alignItems: 'stretch',
+    overflow: 'hidden', // Prevents overflow
   },
   graphLine: {
     height: hp(18),
@@ -364,6 +416,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   statsGrid: {
+    paddingHorizontal: wp(4),
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: hp(1),
@@ -392,5 +445,58 @@ const styles = StyleSheet.create({
     fontSize: fontSize(12),
     color: '#888',
     fontWeight: '500',
+  },
+  rangeBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginVertical: hp(2),
+    paddingHorizontal: wp(2),
+  },
+  rangeLabelCol: {
+    alignItems: 'center',
+    width: wp(22),
+  },
+  rangeLabelTitle: {
+    fontSize: fontSize(11),
+    color: '#888',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  rangeLabelValue: {
+    fontSize: fontSize(13),
+    color: '#222',
+    fontWeight: '700',
+  },
+  rangeBarCenterWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    position: 'relative',
+    minWidth: wp(30),
+  },
+  currentPriceWrapper: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  currentPriceValue: {
+    fontSize: fontSize(11),
+    color: '#222',
+    fontWeight: '700',
+    marginBottom: -2,
+  },
+  currentPriceMarker: {
+    fontSize: fontSize(14),
+    color: '#d35400',
+    lineHeight: fontSize(10),
+    marginTop: -1,
+    marginBottom: 2,
+  },
+  rangeBar: {
+    height: 2,
+    backgroundColor: '#d35400',
+    borderRadius: 1,
+    width: '100%',
+    minWidth: wp(30),
   },
 });
