@@ -60,10 +60,15 @@ const Details = () => {
     if (symbol) {
       dispatch(fetchDetailsData({ symbol, selectedRange }));
     }
+    // Only reset on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbol, selectedRange, dispatch]);
+
+  useEffect(() => {
     return () => {
       dispatch(resetDetails());
     };
-  }, [symbol, selectedRange, dispatch]);
+  }, [dispatch]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
