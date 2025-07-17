@@ -22,22 +22,16 @@ interface CompanyOverview {
 interface AboutSectionProps {
   companyData: CompanyOverview | null;
   loading?: boolean;
+  currentPrice?: string | number;
 }
 
 const AboutSection: React.FC<AboutSectionProps> = ({
   companyData,
   loading = false,
+  currentPrice,
 }) => {
   if (loading) {
-    return (
-      <View style={styles.aboutSection}>
-        <ActivityIndicator
-          size="large"
-          color="#d35400"
-          style={{ alignSelf: 'center', marginVertical: 20 }}
-        />
-      </View>
-    );
+    return <View style={styles.aboutSection} />;
   }
 
   if (!companyData) {
@@ -139,7 +133,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         <View style={styles.rangeBarCenterWrapper}>
           <View style={styles.currentPriceWrapper}>
             <Text style={styles.currentPriceValue}>
-              Current price: ${displayValue(companyData.AnalystTargetPrice)}
+              Current price: ${displayValue(currentPrice?.toString())}
             </Text>
             <Text style={styles.currentPriceMarker}>▼</Text>
           </View>

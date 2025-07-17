@@ -16,53 +16,37 @@ import {
 } from '../../utils/responsive';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
-
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import WatchlistBottomSheet from '../../components/WatchlistBottomSheet';
 import AboutSection from '../../components/AboutSection';
-import {
-  fetchCompanyOverview,
-  fetchDailyTimeSeries,
-  fetchWeeklyTimeSeries,
-  fetchMonthlyTimeSeries,
-} from '../../api';
 import StockGraph from '../../components/StockGraph';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import { StockItem } from '../../store/slice/watchlistSlice';
-
-const DUMMY_STOCK = {
-  logo: '🍏',
-  name: 'APPLE INC',
-  ticker: 'AAPL',
-  type: 'Common Stock',
-  exchange: 'NSQ',
-  price: '$177.15',
-  change: '+0.41%',
-  changePositive: true,
-};
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import {
+  fetchDetailsData,
+  setSelectedRange,
+  resetDetails,
+} from '../../store/slice/detailsSlice';
 
 const TIME_RANGES = ['1D', '1W', '1M'];
 
 const Details = () => {
   const navigation = useNavigation();
   const route = useRoute() as {
-    params?: { stock?: typeof DUMMY_STOCK; symbol?: string };
+    params?: { stock?: any; symbol?: string };
   };
-  const stock = route.params?.stock || DUMMY_STOCK;
-  const symbol = route.params?.symbol || stock.ticker;
-  const [selectedRange, setSelectedRange] = useState('1D');
+  // Remove DUMMY_STOCK fallback, use empty fallback values
+  const stock = route.params?.stock || {};
+  const symbol = route.params?.symbol || stock.ticker || '';
+  const dispatch = useDispatch<AppDispatch>();
 
-  // Company overview data state
-  const [companyData, setCompanyData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  // Redux state for details
+  const { companyData, chartData, loading, selectedRange } = useSelector(
+    (state: RootState) => state.details,
+  );
 
   // Watchlist modal state
   const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
-
-  // Chart data state
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [chartLoading, setChartLoading] = useState(true);
 
   // Redux watchlists
   const watchlists = useSelector((state: RootState) => state.watchlist.lists);
@@ -71,73 +55,32 @@ const Details = () => {
     wl.stocks.some(s => s.symbol === symbol),
   );
 
-  // Fetch company overview data
+  // Fetch all details data on mount and when selectedRange or symbol changes
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchCompanyOverview(symbol);
-        setCompanyData(data);
-      } catch (error) {
-        console.error('Error fetching company overview:', error);
-        setCompanyData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (symbol) {
-      fetchData();
+      dispatch(fetchDetailsData({ symbol, selectedRange }));
     }
-  }, [symbol]);
-
-  // Fetch chart data when selectedRange or symbol changes
-  useEffect(() => {
-    const fetchChartData = async () => {
-      if (!symbol) return;
-      setChartLoading(true);
-      try {
-        let data;
-        if (selectedRange === '1D') {
-          data = await fetchDailyTimeSeries(symbol);
-        } else if (selectedRange === '1W') {
-          data = await fetchWeeklyTimeSeries(symbol);
-        } else if (selectedRange === '1M') {
-          data = await fetchMonthlyTimeSeries(symbol);
-        }
-        // Parse the response to extract the time series
-        let timeSeries = null;
-        if (selectedRange === '1D') {
-          timeSeries = data['Time Series (Daily)'];
-        } else if (selectedRange === '1W') {
-          timeSeries = data['Weekly Time Series'];
-        } else if (selectedRange === '1M') {
-          timeSeries = data['Monthly Time Series'];
-        }
-        if (timeSeries) {
-          // Convert to chart data: [{ value: close }, ...] (no x-axis labels)
-          const chartArr = Object.entries(timeSeries)
-            .slice(
-              0,
-              selectedRange === '1D' ? 16 : selectedRange === '1W' ? 12 : 12,
-            ) // limit points for clarity
-            .map(([date, val]: any) => ({ value: parseFloat(val['4. close']) }))
-            .reverse(); // reverse for chronological order
-          setChartData(chartArr);
-        } else {
-          setChartData([]);
-        }
-      } catch (err) {
-        setChartData([]);
-      } finally {
-        setChartLoading(false);
-      }
+    return () => {
+      dispatch(resetDetails());
     };
-    fetchChartData();
-  }, [selectedRange, symbol]);
+  }, [symbol, selectedRange, dispatch]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      {/* Loader overlay */}
+      {loading && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            zIndex: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ActivityIndicator size="large" color="#d35400" />
+        </View>
+      )}
       <View style={styles.headerRow}>
         <TouchableOpacity
           style={{ marginRight: 10 }}
@@ -162,43 +105,51 @@ const Details = () => {
         style={styles.container}
         contentContainerStyle={{ paddingBottom: hp(4), paddingTop: 0 }}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!loading}
       >
         {/* Stock Info */}
         <View style={styles.stockInfoRow}>
           <View style={styles.logoCircle}>
-            <Text style={styles.logo}>{DUMMY_STOCK.logo}</Text>
+            <Text style={styles.logo}>
+              {companyData?.Logo || stock.logo || '🏦'}
+            </Text>
           </View>
           <View style={{ flex: 1, marginLeft: wp(3) }}>
             <Text style={styles.stockName}>
-              {companyData?.Name || stock.name || DUMMY_STOCK.name}
+              {companyData?.Name || stock.name || 'N/A'}
             </Text>
             <Text style={styles.stockMeta}>
-              {symbol || stock.ticker || DUMMY_STOCK.ticker},{' '}
-              {companyData?.AssetType || stock.type || DUMMY_STOCK.type}
+              {symbol || stock.ticker || 'N/A'},{' '}
+              {companyData?.AssetType || stock.type || 'N/A'}
             </Text>
             <Text style={styles.stockMeta}>
-              {companyData?.Exchange || stock.exchange || DUMMY_STOCK.exchange}
+              {companyData?.Exchange || stock.exchange || 'N/A'}
             </Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={styles.stockPrice}>
-              {stock.price || DUMMY_STOCK.price}
+              {companyData?.Price || stock.price || 'N/A'}
             </Text>
             <Text
               style={[
                 styles.stockChange,
-                { color: DUMMY_STOCK.changePositive ? '#2ecc71' : '#e74c3c' },
+                {
+                  color: (companyData?.ChangePercent || stock.change || '')
+                    .toString()
+                    .includes('-')
+                    ? '#e74c3c'
+                    : '#2ecc71',
+                },
               ]}
             >
-              {DUMMY_STOCK.changePositive ? '+' : ''}
-              {DUMMY_STOCK.change}
+              {companyData?.ChangePercent || stock.change || ''}
             </Text>
           </View>
         </View>
 
         {/* Graph Placeholder */}
         <View style={styles.graphContainer}>
-          <StockGraph data={chartData} loading={chartLoading} />
+          <StockGraph data={chartData} loading={false} />
           {/* Time Range Selector */}
           <View style={styles.timeRangeRow}>
             {TIME_RANGES.map(range => (
@@ -208,7 +159,9 @@ const Details = () => {
                   styles.timeRangeBtn,
                   selectedRange === range && styles.timeRangeBtnActive,
                 ]}
-                onPress={() => setSelectedRange(range)}
+                onPress={() =>
+                  dispatch(setSelectedRange(range as '1D' | '1W' | '1M'))
+                }
               >
                 <Text
                   style={[
@@ -224,16 +177,21 @@ const Details = () => {
         </View>
 
         {/* About Section */}
-        <AboutSection companyData={companyData} loading={loading} />
+        {!loading && (
+          <AboutSection
+            companyData={companyData}
+            currentPrice={companyData?.Price || stock.price || 'N/A'}
+          />
+        )}
 
         <WatchlistBottomSheet
           visible={watchlistModalVisible}
           onClose={() => setWatchlistModalVisible(false)}
           stock={{
             symbol: symbol,
-            name: companyData?.Name || stock.name || DUMMY_STOCK.name,
-            price: stock.price || DUMMY_STOCK.price,
-            changePercentage: stock.change || DUMMY_STOCK.change,
+            name: companyData?.Name || stock.name || 'N/A',
+            price: companyData?.Price || stock.price || 'N/A',
+            changePercentage: companyData?.ChangePercent || stock.change || '',
           }}
         />
       </ScrollView>

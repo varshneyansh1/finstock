@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,9 +8,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import type { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { fetchTopGainersLosers } from '../../api';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import {
+  fetchViewAllGainersLosers,
+  loadMoreViewAll,
+  resetViewAllState,
+  setViewAllType,
+  ViewAllType,
+} from '../../store/slice/viewAllGainersLosersSlice';
 import StockCard from '../../components/StockCard';
 import { wp, hp, fontSize } from '../../utils/responsive';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -33,61 +40,27 @@ type RootStackParamList = {
   Details: { stock: StockItem; symbol?: string };
 };
 
-const PAGE_SIZE = 10;
-
 const ViewAll = () => {
   const route = useRoute();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { type } = route.params as ViewAllRouteParams;
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [allData, setAllData] = useState<StockItem[]>([]);
-  const [displayed, setDisplayed] = useState<StockItem[]>([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { allData, displayed, page, loading, loadingMore, error } = useSelector(
+    (state: RootState) => state.viewAllGainersLosers,
+  );
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchTopGainersLosers();
-        const items =
-          (type === 'losers' ? data.top_losers : data.top_gainers) || [];
-        const mapped = items.map((item: any, idx: number) => ({
-          id: item.ticker + idx,
-          name: item.ticker,
-          price: item.price,
-          changePercentage: item.change_percentage,
-          symbol: item.ticker,
-        }));
-        setAllData(mapped);
-        setDisplayed(mapped.slice(0, PAGE_SIZE));
-        setPage(1);
-      } catch (e) {
-        setError('Failed to load data');
-        setAllData([]);
-        setDisplayed([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [type]);
+    dispatch(resetViewAllState());
+    dispatch(setViewAllType(type));
+    dispatch(fetchViewAllGainersLosers(type as ViewAllType));
+  }, [type, dispatch]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || displayed.length >= allData.length) return;
-    setLoadingMore(true);
-    setTimeout(() => {
-      const nextPage = page + 1;
-      const nextData = allData.slice(0, nextPage * PAGE_SIZE);
-      setDisplayed(nextData);
-      setPage(nextPage);
-      setLoadingMore(false);
-    }, 300); // Simulate network delay for UX
-  }, [page, allData, displayed.length, loadingMore]);
+    dispatch(loadMoreViewAll());
+  }, [loadingMore, displayed.length, allData.length, dispatch]);
 
   const handleStockPress = (item: StockItem) => {
     navigation.navigate('Details', { stock: item, symbol: item.symbol });

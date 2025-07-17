@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Text,
 } from 'react-native';
 import { wp, hp } from '../../utils/responsive';
 import Section from '../../components/Section';
 import Header from '../../components/Header';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { fetchTopGainersLosers } from '../../api';
+// Remove direct API import
+// import { fetchTopGainersLosers } from '../../api';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTopGainersLosersThunk } from '../../store/slice/topGainersLosersSlice';
+import { RootState, AppDispatch } from '../../store';
 
 type RootStackParamList = {
   HomeScreen: undefined;
@@ -31,9 +36,15 @@ type RootStackParamList = {
 const Home = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [loading, setLoading] = useState(true);
-  const [gainers, setGainers] = useState<any[]>([]);
-  const [losers, setLosers] = useState<any[]>([]);
+  // Remove local state for gainers/losers/loading
+  // const [loading, setLoading] = useState(true);
+  // const [gainers, setGainers] = useState<any[]>([]);
+  // const [losers, setLosers] = useState<any[]>([]);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { gainers, losers, loading, error } = useSelector(
+    (state: RootState) => state.topGainersLosers,
+  );
 
   const handleStockPress = (item: {
     id: string;
@@ -46,39 +57,8 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchTopGainersLosers();
-        setGainers(
-          (data.top_gainers || [])
-            .slice(0, 4)
-            .map((item: any, idx: number) => ({
-              id: item.ticker + idx,
-              name: item.ticker,
-              price: item.price,
-              changePercentage: item.change_percentage,
-              symbol: item.ticker,
-            })),
-        );
-        setLosers(
-          (data.top_losers || []).slice(0, 4).map((item: any, idx: number) => ({
-            id: item.ticker + idx,
-            name: item.ticker,
-            price: item.price,
-            changePercentage: item.change_percentage,
-            symbol: item.ticker,
-          })),
-        );
-      } catch (e) {
-        setGainers([]);
-        setLosers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+    dispatch(fetchTopGainersLosersThunk());
+  }, [dispatch]);
 
   if (loading) {
     return (
@@ -88,6 +68,19 @@ const Home = () => {
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         >
           <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header appName="FinStock" searchPlaceholder="Search here..." />
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ color: 'red' }}>{error}</Text>
         </View>
       </SafeAreaView>
     );
