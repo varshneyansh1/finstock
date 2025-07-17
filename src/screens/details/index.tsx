@@ -4,8 +4,9 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   wp,
   hp,
@@ -13,9 +14,19 @@ import {
   borderRadius,
   padding,
 } from '../../utils/responsive';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
-import { LineChart } from 'react-native-gifted-charts';
+
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import WatchlistBottomSheet from '../../components/WatchlistBottomSheet';
+import AboutSection from '../../components/AboutSection';
+import {
+  fetchCompanyOverview,
+  fetchDailyTimeSeries,
+  fetchWeeklyTimeSeries,
+  fetchMonthlyTimeSeries,
+} from '../../api';
+import StockGraph from '../../components/StockGraph';
 
 const DUMMY_STOCK = {
   logo: '🍏',
@@ -26,255 +37,205 @@ const DUMMY_STOCK = {
   price: '$177.15',
   change: '+0.41%',
   changePositive: true,
-  about:
-    "Apple Inc. is an American multinational technology company that specializes in consumer electronics, computer software, and online services. Apple is the world's largest technology company by revenue (totaling $274.5 billion in 2020) and, since January 2021, the world's most valuable company. As of 2021, Apple is the world's fourth-largest PC vendor by unit sales, and fourth-largest smartphone manufacturer. It is one of the Big Five American information technology companies, along with Amazon, Google, Microsoft, and Facebook.",
-  tags: [
-    { label: 'Industry: Electronic computers', color: '#fbeee0' },
-    { label: 'Sector: Technology', color: '#e0f7fa' },
-  ],
-  stats: [
-    { label: '52-Week Low', value: '$123.64' },
-    { label: 'Current price', value: '$177.15' },
-    { label: '52-Week High', value: '$197.96' },
-    { label: 'Market Cap', value: '$2.77T' },
-    { label: 'P/E Ratio', value: '27.77' },
-    { label: 'Beta', value: '1.308' },
-    { label: 'Dividend Yield', value: '0.54%' },
-    { label: 'Profit Margin', value: '0.247' },
-  ],
 };
 
-const TIME_RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y'];
-
-// Example: More realistic dummy data for a stock line
-const DUMMY_CHART_DATA = [
-  { value: 175, label: '09:31 AM' },
-  { value: 174.5 },
-  { value: 175.2 },
-  { value: 176 },
-  { value: 177, label: '11:00 AM' },
-  { value: 176.2 },
-  { value: 177.8 },
-  { value: 178.5 },
-  { value: 177.9, label: '12:48 PM' },
-  { value: 177.2 },
-  { value: 176.7 },
-  { value: 177.1 },
-  { value: 177.5 },
-  { value: 177.2 },
-  { value: 176.6 },
-  { value: 177.15, label: '02:58 PM' },
-];
-
-const yAxisLabels = ['$174', '$176', '$178'];
-
-// Dummy data for 52-week low/high chart
-const DUMMY_52WEEK_DATA = [
-  { value: 123.64, label: 'Low' },
-  { value: 177.15, label: 'Current' },
-  { value: 197.96, label: 'High' },
-];
-
-// Modular chart component for main price chart
-const StockLineChart = ({ data }: { data: any[] }) => (
-  <View style={{ width: '100%', alignItems: 'center', overflow: 'hidden' }}>
-    <LineChart
-      data={data}
-      height={hp(18)}
-      width={wp(92)}
-      isAnimated
-      color="#d35400"
-      thickness={2}
-      hideDataPoints
-      xAxisColor="#eee"
-      yAxisColor="#eee"
-      noOfSections={2}
-      areaChart
-      startFillColor="#fbeee0"
-      endFillColor="#fff"
-      startOpacity={0.5}
-      endOpacity={0.1}
-      yAxisTextStyle={{ color: '#888', fontSize: fontSize(12) }}
-      xAxisLabelTextStyle={{ color: '#888', fontSize: fontSize(12) }}
-      initialSpacing={0}
-      spacing={wp(4)}
-      disableScroll
-      showVerticalLines={false}
-      showXAxisIndices
-      showYAxisIndices
-      yAxisLabelTexts={yAxisLabels}
-    />
-  </View>
-);
-
-// Modular chart for 52-week low/high
-const WeekRangeChart = ({ data }: { data: any[] }) => (
-  <View style={styles.weekRangeContainer}>
-    <Text style={styles.weekRangeLabel}>52-Week Low</Text>
-    <LineChart
-      data={data}
-      height={hp(5)}
-      width={wp(60)}
-      color="#d35400"
-      thickness={3}
-      hideDataPoints={false}
-      yAxisColor="transparent"
-      xAxisColor="transparent"
-      yAxisTextStyle={{ color: 'transparent' }}
-      xAxisLabelTextStyle={{ color: 'transparent' }}
-      initialSpacing={0}
-      spacing={wp(25)}
-      disableScroll
-      showVerticalLines={false}
-      showXAxisIndices={false}
-      showYAxisIndices={false}
-      showReferenceLine1={false}
-      dataPointsColor={'#d35400'}
-    />
-    <Text style={styles.weekRangeLabel}>52-Week High</Text>
-  </View>
-);
-
-// Custom 52-week range bar with center marker for current price (matches design)
-const WeekRangeBar = ({
-  low,
-  current,
-  high,
-}: {
-  low: number;
-  current: number;
-  high: number;
-}) => {
-  return (
-    <View style={styles.rangeBarContainer}>
-      {/* Left label */}
-      <View style={styles.rangeLabelCol}>
-        <Text style={styles.rangeLabelTitle}>52-Week Low</Text>
-        <Text style={styles.rangeLabelValue}>${low}</Text>
-      </View>
-      {/* Center marker and line */}
-      <View style={styles.rangeBarCenterWrapper}>
-        <View style={styles.currentPriceWrapper}>
-          <Text style={styles.currentPriceValue}>
-            Current price: ${current}
-          </Text>
-          <Text style={styles.currentPriceMarker}>▼</Text>
-        </View>
-        <View style={styles.rangeBar} />
-      </View>
-      {/* Right label */}
-      <View style={styles.rangeLabelCol}>
-        <Text style={styles.rangeLabelTitle}>52-Week High</Text>
-        <Text style={styles.rangeLabelValue}>${high}</Text>
-      </View>
-    </View>
-  );
-};
+const TIME_RANGES = ['1D', '1W', '1M'];
 
 const Details = () => {
-  const route = useRoute();
-  // @ts-ignore
+  const navigation = useNavigation();
+  const route = useRoute() as {
+    params?: { stock?: typeof DUMMY_STOCK; symbol?: string };
+  };
   const stock = route.params?.stock || DUMMY_STOCK;
+  const symbol = route.params?.symbol || stock.ticker;
   const [selectedRange, setSelectedRange] = useState('1D');
 
+  // Company overview data state
+  const [companyData, setCompanyData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Watchlist modal state
+  const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
+  const [watchlists, setWatchlists] = useState(['Watchlist 1', 'Watchlist 2']);
+  const [selectedWatchlists, setSelectedWatchlists] = useState<string[]>([]);
+
+  // Chart data state
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartLoading, setChartLoading] = useState(true);
+
+  // Fetch company overview data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchCompanyOverview(symbol);
+        setCompanyData(data);
+      } catch (error) {
+        console.error('Error fetching company overview:', error);
+        setCompanyData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (symbol) {
+      fetchData();
+    }
+  }, [symbol]);
+
+  // Fetch chart data when selectedRange or symbol changes
+  useEffect(() => {
+    const fetchChartData = async () => {
+      if (!symbol) return;
+      setChartLoading(true);
+      try {
+        let data;
+        if (selectedRange === '1D') {
+          data = await fetchDailyTimeSeries(symbol);
+        } else if (selectedRange === '1W') {
+          data = await fetchWeeklyTimeSeries(symbol);
+        } else if (selectedRange === '1M') {
+          data = await fetchMonthlyTimeSeries(symbol);
+        }
+        // Parse the response to extract the time series
+        let timeSeries = null;
+        if (selectedRange === '1D') {
+          timeSeries = data['Time Series (Daily)'];
+        } else if (selectedRange === '1W') {
+          timeSeries = data['Weekly Time Series'];
+        } else if (selectedRange === '1M') {
+          timeSeries = data['Monthly Time Series'];
+        }
+        if (timeSeries) {
+          // Convert to chart data: [{ value: close }, ...] (no x-axis labels)
+          const chartArr = Object.entries(timeSeries)
+            .slice(
+              0,
+              selectedRange === '1D' ? 16 : selectedRange === '1W' ? 12 : 12,
+            ) // limit points for clarity
+            .map(([date, val]: any) => ({ value: parseFloat(val['4. close']) }))
+            .reverse(); // reverse for chronological order
+          setChartData(chartArr);
+        } else {
+          setChartData([]);
+        }
+      } catch (err) {
+        setChartData([]);
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChartData();
+  }, [selectedRange, symbol]);
+
+  const handleAddWatchlist = (name: string) => {
+    if (!watchlists.includes(name)) {
+      setWatchlists([...watchlists, name]);
+    }
+  };
+
+  const handleToggleWatchlist = (name: string) => {
+    setSelectedWatchlists(prev =>
+      prev.includes(name) ? prev.filter(w => w !== name) : [...prev, name],
+    );
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: hp(4) }}
-    >
-      {/* Header */}
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.headerRow}>
+        <TouchableOpacity
+          style={{ marginRight: 10 }}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
+        </TouchableOpacity>
         <Text style={styles.headerText}>Details Screen</Text>
-        <TouchableOpacity style={styles.bookmarkBtn}>
+        <TouchableOpacity
+          style={styles.bookmarkBtn}
+          onPress={() => setWatchlistModalVisible(true)}
+        >
           <Icon name="bookmark" size={fontSize(22)} color="#222" />
         </TouchableOpacity>
       </View>
-
-      {/* Stock Info */}
-      <View style={styles.stockInfoRow}>
-        <View style={styles.logoCircle}>
-          <Text style={styles.logo}>{stock.icon || DUMMY_STOCK.logo}</Text>
-        </View>
-        <View style={{ flex: 1, marginLeft: wp(3) }}>
-          <Text style={styles.stockName}>{stock.name || DUMMY_STOCK.name}</Text>
-          <Text style={styles.stockMeta}>
-            {stock.ticker || DUMMY_STOCK.ticker},{' '}
-            {stock.type || DUMMY_STOCK.type}
-          </Text>
-          <Text style={styles.stockMeta}>
-            {stock.exchange || DUMMY_STOCK.exchange}
-          </Text>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={styles.stockPrice}>
-            {stock.price || DUMMY_STOCK.price}
-          </Text>
-          <Text
-            style={[
-              styles.stockChange,
-              { color: DUMMY_STOCK.changePositive ? '#2ecc71' : '#e74c3c' },
-            ]}
-          >
-            {DUMMY_STOCK.changePositive ? '+' : ''}
-            {DUMMY_STOCK.change}
-          </Text>
-        </View>
-      </View>
-
-      {/* Graph Placeholder */}
-      <View style={styles.graphContainer}>
-        <StockLineChart data={DUMMY_CHART_DATA} />
-        {/* Time Range Selector */}
-        <View style={styles.timeRangeRow}>
-          {TIME_RANGES.map(range => (
-            <TouchableOpacity
-              key={range}
+      {/* Content ScrollView */}
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: hp(4), paddingTop: 0 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Stock Info */}
+        <View style={styles.stockInfoRow}>
+          <View style={styles.logoCircle}>
+            <Text style={styles.logo}>{DUMMY_STOCK.logo}</Text>
+          </View>
+          <View style={{ flex: 1, marginLeft: wp(3) }}>
+            <Text style={styles.stockName}>
+              {companyData?.Name || stock.name || DUMMY_STOCK.name}
+            </Text>
+            <Text style={styles.stockMeta}>
+              {symbol || stock.ticker || DUMMY_STOCK.ticker},{' '}
+              {companyData?.AssetType || stock.type || DUMMY_STOCK.type}
+            </Text>
+            <Text style={styles.stockMeta}>
+              {companyData?.Exchange || stock.exchange || DUMMY_STOCK.exchange}
+            </Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={styles.stockPrice}>
+              {stock.price || DUMMY_STOCK.price}
+            </Text>
+            <Text
               style={[
-                styles.timeRangeBtn,
-                selectedRange === range && styles.timeRangeBtnActive,
+                styles.stockChange,
+                { color: DUMMY_STOCK.changePositive ? '#2ecc71' : '#e74c3c' },
               ]}
-              onPress={() => setSelectedRange(range)}
             >
-              <Text
-                style={[
-                  styles.timeRangeText,
-                  selectedRange === range && styles.timeRangeTextActive,
-                ]}
-              >
-                {range}
-              </Text>
-            </TouchableOpacity>
-          ))}
+              {DUMMY_STOCK.changePositive ? '+' : ''}
+              {DUMMY_STOCK.change}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* About Section */}
-      <View style={styles.aboutSection}>
-        <Text style={styles.aboutTitle}>About {DUMMY_STOCK.name}</Text>
-        <Text style={styles.aboutText}>{DUMMY_STOCK.about}</Text>
-        <View style={styles.tagsRow}>
-          {DUMMY_STOCK.tags.map(tag => (
-            <View
-              key={tag.label}
-              style={[styles.tag, { backgroundColor: tag.color }]}
-            >
-              <Text style={styles.tagText}>{tag.label}</Text>
-            </View>
-          ))}
+        {/* Graph Placeholder */}
+        <View style={styles.graphContainer}>
+          <StockGraph data={chartData} loading={chartLoading} />
+          {/* Time Range Selector */}
+          <View style={styles.timeRangeRow}>
+            {TIME_RANGES.map(range => (
+              <TouchableOpacity
+                key={range}
+                style={[
+                  styles.timeRangeBtn,
+                  selectedRange === range && styles.timeRangeBtnActive,
+                ]}
+                onPress={() => setSelectedRange(range)}
+              >
+                <Text
+                  style={[
+                    styles.timeRangeText,
+                    selectedRange === range && styles.timeRangeTextActive,
+                  ]}
+                >
+                  {range}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-        {/* 52-Week Range Bar (center marker) */}
-        <WeekRangeBar low={123.64} current={177.15} high={197.96} />
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          {DUMMY_STOCK.stats.slice(3).map((stat, idx) => (
-            <View key={stat.label} style={styles.statItem}>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-              <Text style={styles.statValue}>{stat.value}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    </ScrollView>
+
+        {/* About Section */}
+        <AboutSection companyData={companyData} loading={loading} />
+
+        <WatchlistBottomSheet
+          visible={watchlistModalVisible}
+          onClose={() => setWatchlistModalVisible(false)}
+          watchlists={watchlists}
+          onAddWatchlist={handleAddWatchlist}
+          onToggleWatchlist={handleToggleWatchlist}
+          selectedWatchlists={selectedWatchlists}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -292,6 +253,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: hp(2),
     marginBottom: hp(2),
+    paddingHorizontal: wp(4),
   },
   headerText: {
     fontSize: fontSize(22),
@@ -381,122 +343,5 @@ const styles = StyleSheet.create({
   timeRangeTextActive: {
     color: '#d35400',
     fontWeight: '700',
-  },
-  aboutSection: {
-    backgroundColor: '#fff',
-    borderRadius: borderRadius(12),
-    padding: padding(3),
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  aboutTitle: {
-    fontSize: fontSize(15),
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: hp(1),
-  },
-  aboutText: {
-    fontSize: fontSize(13),
-    color: '#444',
-    marginBottom: hp(1.5),
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    marginBottom: hp(1.5),
-  },
-  tag: {
-    borderRadius: borderRadius(8),
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(0.7),
-    marginRight: wp(2),
-  },
-  tagText: {
-    fontSize: fontSize(12),
-    color: '#222',
-    fontWeight: '500',
-  },
-  statsGrid: {
-    paddingHorizontal: wp(4),
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: hp(1),
-  },
-  statItem: {
-    width: '33%',
-    marginBottom: hp(1.5),
-  },
-  statLabel: {
-    fontSize: fontSize(12),
-    color: '#888',
-  },
-  statValue: {
-    fontSize: fontSize(14),
-    color: '#222',
-    fontWeight: '600',
-  },
-  weekRangeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: hp(2),
-    paddingHorizontal: wp(2),
-  },
-  weekRangeLabel: {
-    fontSize: fontSize(12),
-    color: '#888',
-    fontWeight: '500',
-  },
-  rangeBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginVertical: hp(2),
-    paddingHorizontal: wp(2),
-  },
-  rangeLabelCol: {
-    alignItems: 'center',
-    width: wp(22),
-  },
-  rangeLabelTitle: {
-    fontSize: fontSize(11),
-    color: '#888',
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  rangeLabelValue: {
-    fontSize: fontSize(13),
-    color: '#222',
-    fontWeight: '700',
-  },
-  rangeBarCenterWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    position: 'relative',
-    minWidth: wp(30),
-  },
-  currentPriceWrapper: {
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  currentPriceValue: {
-    fontSize: fontSize(11),
-    color: '#222',
-    fontWeight: '700',
-    marginBottom: -2,
-  },
-  currentPriceMarker: {
-    fontSize: fontSize(14),
-    color: '#d35400',
-    lineHeight: fontSize(10),
-    marginTop: -1,
-    marginBottom: 2,
-  },
-  rangeBar: {
-    height: 2,
-    backgroundColor: '#d35400',
-    borderRadius: 1,
-    width: '100%',
-    minWidth: wp(30),
   },
 });

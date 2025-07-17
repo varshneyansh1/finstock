@@ -1,21 +1,32 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { wp, hp, fontSize, borderRadius } from '../utils/responsive';
 
 interface StockCardProps {
-  icon: string;
   name: string;
   price: string;
+  changePercentage: string;
+  symbol?: string;
+  onPress?: () => void;
 }
 
-const StockCard = ({ icon, name, price }: StockCardProps) => (
-  <View style={styles.card}>
+const DEFAULT_ICON = '📈';
+
+const StockCard = ({
+  name,
+  price,
+  changePercentage,
+  symbol,
+  onPress,
+}: StockCardProps) => (
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
     <View style={styles.iconCircle}>
-      <Text style={styles.icon}>{icon}</Text>
+      <Text style={styles.icon}>{DEFAULT_ICON}</Text>
     </View>
     <Text style={styles.stockName}>{name}</Text>
     <Text style={styles.stockPrice}>{price}</Text>
-  </View>
+    <Text style={styles.stockChange}>{changePercentage}</Text>
+  </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
@@ -26,7 +37,6 @@ const styles = StyleSheet.create({
     width: wp(44),
     paddingVertical: hp(2),
     marginBottom: hp(1),
-  
   },
   iconCircle: {
     width: wp(10),
@@ -49,6 +59,11 @@ const styles = StyleSheet.create({
   stockPrice: {
     fontSize: fontSize(14),
     color: '#666',
+  },
+  stockChange: {
+    fontSize: fontSize(13),
+    color: '#008000',
+    marginTop: hp(0.5),
   },
 });
 

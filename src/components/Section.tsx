@@ -11,13 +11,20 @@ import StockCard from './StockCard';
 
 interface SectionProps {
   title: string;
-  data: Array<{ id: string; name: string; price: string; icon: string }>;
+  data: Array<{
+    id: string;
+    name: string;
+    price: string;
+    changePercentage: string;
+    symbol?: string;
+  }>;
   onViewAll?: () => void;
   onStockPress?: (item: {
     id: string;
     name: string;
     price: string;
-    icon: string;
+    changePercentage: string;
+    symbol?: string;
   }) => void;
 }
 
@@ -35,9 +42,13 @@ const Section = ({ title, data, onViewAll, onStockPress }: SectionProps) => (
       numColumns={2}
       columnWrapperStyle={styles.row}
       renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => onStockPress && onStockPress(item)}>
-          <StockCard icon={item.icon} name={item.name} price={item.price} />
-        </TouchableOpacity>
+        <StockCard
+          name={item.name}
+          price={item.price}
+          changePercentage={item.changePercentage}
+          symbol={item.symbol}
+          onPress={() => onStockPress && onStockPress(item)}
+        />
       )}
       scrollEnabled={false}
     />
