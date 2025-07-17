@@ -95,7 +95,22 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header appName="FinStock" searchPlaceholder="Search here..." />
+      <Header
+        appName="FinStock"
+        searchPlaceholder="Search here..."
+        onResultPress={item => {
+          navigation.navigate('Details', {
+            stock: {
+              id: item['1. symbol'],
+              name: item['2. name'],
+              price: 'N/A',
+              changePercentage: 'N/A',
+              symbol: item['1. symbol'],
+            },
+            symbol: item['1. symbol'],
+          });
+        }}
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

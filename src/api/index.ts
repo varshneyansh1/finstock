@@ -74,3 +74,18 @@ export const fetchMonthlyTimeSeries = async (symbol: string) => {
     throw error;
   }
 };
+
+export const searchSymbols = async (keywords: string) => {
+  try {
+    const response = await axiosInstance.get('query', {
+      params: {
+        function: 'SYMBOL_SEARCH',
+        keywords: keywords,
+        apikey: config.apiKey,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

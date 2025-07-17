@@ -1,4 +1,4 @@
 export default {
     baseURL:'https://www.alphavantage.co/',
-    apiKey:'WQ03YFJ229R670GK'
+    apiKey:'F8IN9QDB3UATUGPI'
 }
