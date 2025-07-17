@@ -15,7 +15,7 @@ import {
   padding,
 } from '../../utils/responsive';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Feather';
+
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import WatchlistBottomSheet from '../../components/WatchlistBottomSheet';
@@ -27,6 +27,9 @@ import {
   fetchMonthlyTimeSeries,
 } from '../../api';
 import StockGraph from '../../components/StockGraph';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { StockItem } from '../../store/slice/watchlistSlice';
 
 const DUMMY_STOCK = {
   logo: '🍏',
@@ -56,12 +59,17 @@ const Details = () => {
 
   // Watchlist modal state
   const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
-  const [watchlists, setWatchlists] = useState(['Watchlist 1', 'Watchlist 2']);
-  const [selectedWatchlists, setSelectedWatchlists] = useState<string[]>([]);
 
   // Chart data state
   const [chartData, setChartData] = useState<any[]>([]);
   const [chartLoading, setChartLoading] = useState(true);
+
+  // Redux watchlists
+  const watchlists = useSelector((state: RootState) => state.watchlist.lists);
+  // Check if this stock is in any watchlist
+  const isInAnyWatchlist = watchlists.some(wl =>
+    wl.stocks.some(s => s.symbol === symbol),
+  );
 
   // Fetch company overview data
   useEffect(() => {
@@ -128,18 +136,6 @@ const Details = () => {
     fetchChartData();
   }, [selectedRange, symbol]);
 
-  const handleAddWatchlist = (name: string) => {
-    if (!watchlists.includes(name)) {
-      setWatchlists([...watchlists, name]);
-    }
-  };
-
-  const handleToggleWatchlist = (name: string) => {
-    setSelectedWatchlists(prev =>
-      prev.includes(name) ? prev.filter(w => w !== name) : [...prev, name],
-    );
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.headerRow}>
@@ -154,7 +150,11 @@ const Details = () => {
           style={styles.bookmarkBtn}
           onPress={() => setWatchlistModalVisible(true)}
         >
-          <Icon name="bookmark" size={fontSize(22)} color="#222" />
+          <Ionicons
+            name={isInAnyWatchlist ? 'bookmark' : 'bookmark-outline'}
+            size={fontSize(22)}
+            color={isInAnyWatchlist ? '#d35400' : '#222'}
+          />
         </TouchableOpacity>
       </View>
       {/* Content ScrollView */}
@@ -229,10 +229,12 @@ const Details = () => {
         <WatchlistBottomSheet
           visible={watchlistModalVisible}
           onClose={() => setWatchlistModalVisible(false)}
-          watchlists={watchlists}
-          onAddWatchlist={handleAddWatchlist}
-          onToggleWatchlist={handleToggleWatchlist}
-          selectedWatchlists={selectedWatchlists}
+          stock={{
+            symbol: symbol,
+            name: companyData?.Name || stock.name || DUMMY_STOCK.name,
+            price: stock.price || DUMMY_STOCK.price,
+            changePercentage: stock.change || DUMMY_STOCK.change,
+          }}
         />
       </ScrollView>
     </View>

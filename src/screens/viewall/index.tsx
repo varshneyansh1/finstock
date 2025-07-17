@@ -93,34 +93,9 @@ const ViewAll = () => {
     navigation.navigate('Details', { stock: item, symbol: item.symbol });
   };
 
-  if (loading) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: 'center', alignItems: 'center' },
-        ]}
-      >
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: 'center', alignItems: 'center' },
-        ]}
-      >
-        <Text style={{ color: 'red', fontSize: fontSize(16) }}>{error}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
+      {/* Header always visible */}
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -133,33 +108,56 @@ const ViewAll = () => {
         </Text>
         <View style={{ width: fontSize(22) }} />
       </View>
-      <FlatList
-        data={displayed}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        renderItem={({ item }: { item: StockItem }) => (
-          <StockCard
-            name={item.name}
-            price={item.price}
-            changePercentage={item.changePercentage}
-            symbol={item.symbol}
-            onPress={() => handleStockPress(item)}
-          />
-        )}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          displayed.length < allData.length ? (
-            <ActivityIndicator
-              style={styles.pagination}
-              size="small"
-              color="#888"
+      {/* Content area below header */}
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      ) : error ? (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ color: 'red', fontSize: fontSize(16) }}>{error}</Text>
+        </View>
+      ) : allData.length === 0 ? (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ fontSize: fontSize(16), color: '#888' }}>
+            No data available
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={displayed}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }: { item: StockItem }) => (
+            <StockCard
+              name={item.name}
+              price={item.price}
+              changePercentage={item.changePercentage}
+              symbol={item.symbol}
+              onPress={() => handleStockPress(item)}
             />
-          ) : null
-        }
-        contentContainerStyle={styles.listContent}
-      />
+          )}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            displayed.length < allData.length ? (
+              <ActivityIndicator
+                style={styles.pagination}
+                size="small"
+                color="#888"
+              />
+            ) : null
+          }
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </View>
   );
 };

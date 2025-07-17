@@ -10,25 +10,53 @@ import {
 } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../store';
+import {
+  createWatchlist,
+  addStockToWatchlist,
+  removeStockFromWatchlist,
+  StockItem,
+} from '../store/slice/watchlistSlice';
 
 interface WatchlistBottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  watchlists: string[];
-  onAddWatchlist: (name: string) => void;
-  onToggleWatchlist: (name: string) => void;
-  selectedWatchlists: string[];
+  stock: StockItem;
 }
 
 const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
   visible,
   onClose,
-  watchlists,
-  onAddWatchlist,
-  onToggleWatchlist,
-  selectedWatchlists,
+  stock,
 }) => {
+  const dispatch = useDispatch();
+  const watchlists = useSelector((state: RootState) => state.watchlist.lists);
   const [newWatchlist, setNewWatchlist] = useState('');
+
+  // Find which watchlists contain this stock
+  const selectedWatchlists = watchlists
+    .filter(wl => wl.stocks.some(s => s.symbol === stock.symbol))
+    .map(wl => wl.name);
+
+  const handleAddWatchlist = (name: string) => {
+    if (name.trim() && !watchlists.find(w => w.name === name.trim())) {
+      dispatch(createWatchlist(name.trim()));
+    }
+  };
+
+  const handleToggleWatchlist = (name: string) => {
+    const wl = watchlists.find(w => w.name === name);
+    if (!wl) return;
+    const isIn = wl.stocks.some(s => s.symbol === stock.symbol);
+    if (isIn) {
+      dispatch(
+        removeStockFromWatchlist({ watchlistName: name, symbol: stock.symbol }),
+      );
+    } else {
+      dispatch(addStockToWatchlist({ watchlistName: name, stock }));
+    }
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -58,7 +86,7 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
               style={styles.addBtn}
               onPress={() => {
                 if (newWatchlist.trim()) {
-                  onAddWatchlist(newWatchlist.trim());
+                  handleAddWatchlist(newWatchlist.trim());
                   setNewWatchlist('');
                 }
               }}
@@ -68,15 +96,15 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
           </View>
           <FlatList
             data={watchlists}
-            keyExtractor={item => item}
+            keyExtractor={item => item.name}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.watchlistRow}
-                onPress={() => onToggleWatchlist(item)}
+                onPress={() => handleToggleWatchlist(item.name)}
               >
                 <Ionicons
                   name={
-                    selectedWatchlists.includes(item)
+                    item.stocks.some(s => s.symbol === stock.symbol)
                       ? 'checkbox-outline'
                       : 'square-outline'
                   }
@@ -84,7 +112,7 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
                   color="#222"
                   style={{ marginRight: 10 }}
                 />
-                <Text style={styles.watchlistText}>{item}</Text>
+                <Text style={styles.watchlistText}>{item.name}</Text>
               </TouchableOpacity>
             )}
             style={{ marginTop: 10 }}

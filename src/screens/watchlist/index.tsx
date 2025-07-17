@@ -14,33 +14,70 @@ import {
   borderRadius,
   padding,
 } from '../../utils/responsive';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../store';
+import { deleteWatchlist } from '../../store/slice/watchlistSlice';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-const WATCHLISTS = ['Watchlist 1', 'Watchlist 2'];
+// Define the param list for the stack
+export type WatchListStackParamList = {
+  WatchListScreen: undefined;
+  WatchlistDetail: { name: string };
+};
 
 const WatchlistScreen = () => {
+  const watchlists = useSelector((state: RootState) => state.watchlist.lists);
+  const dispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<WatchListStackParamList>>();
+
+  const handleDelete = (name: string) => {
+    dispatch(deleteWatchlist(name));
+  };
+
+  const handlePress = (name: string) => {
+    navigation.navigate('WatchlistDetail', { name });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Watchlist</Text>
       </View>
       <View style={styles.separator} />
-      <FlatList
-        data={WATCHLISTS}
-        keyExtractor={item => item}
-        renderItem={({ item, index }) => (
-          <>
-            <TouchableOpacity style={styles.row}>
-              <Text style={styles.rowText}>{item}</Text>
-              <Ionicons
-                name="chevron-forward"
-                size={fontSize(22)}
-                color="#222"
-              />
-            </TouchableOpacity>
-            {index < WATCHLISTS.length - 1 && <View style={styles.separator} />}
-          </>
-        )}
-      />
+      {watchlists.length === 0 ? (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ color: '#888', fontSize: fontSize(16) }}>
+            No watchlists yet. Add one from the details screen!
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={watchlists}
+          keyExtractor={item => item.name}
+          renderItem={({ item, index }) => (
+            <>
+              <TouchableOpacity
+                style={styles.row}
+                onPress={() => handlePress(item.name)}
+              >
+                <Text style={styles.rowText}>{item.name}</Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={fontSize(22)}
+                  color="#222"
+                />
+              </TouchableOpacity>
+              {index < watchlists.length - 1 && (
+                <View style={styles.separator} />
+              )}
+            </>
+          )}
+        />
+      )}
     </View>
   );
 };
