@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { wp, hp, fontSize, borderRadius } from '../utils/responsive';
+import { wp, hp, fontSize, borderRadius } from '../../utils/responsive';
 
 interface StockCardProps {
   name: string;

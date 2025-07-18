@@ -20,7 +20,6 @@ import { deleteWatchlist } from '../../store/slice/watchlistSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// Define the param list for the stack
 export type WatchListStackParamList = {
   WatchListScreen: undefined;
   WatchlistDetail: { name: string };

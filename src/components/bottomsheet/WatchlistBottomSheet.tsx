@@ -11,13 +11,14 @@ import {
 import { BlurView } from '@react-native-community/blur';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '../../store';
 import {
   createWatchlist,
   addStockToWatchlist,
   removeStockFromWatchlist,
   StockItem,
-} from '../store/slice/watchlistSlice';
+} from '../../store/slice/watchlistSlice';
+import responsive from '../../utils/responsive';
 
 interface WatchlistBottomSheetProps {
   visible: boolean;
@@ -34,7 +35,6 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
   const watchlists = useSelector((state: RootState) => state.watchlist.lists);
   const [newWatchlist, setNewWatchlist] = useState('');
 
-  // Find which watchlists contain this stock
   const selectedWatchlists = watchlists
     .filter(wl => wl.stocks.some(s => s.symbol === stock.symbol))
     .map(wl => wl.name);
@@ -134,63 +134,63 @@ const styles = StyleSheet.create({
   sheet: {
     width: '100%',
     backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 40,
-    minHeight: 320,
+    borderTopLeftRadius: responsive.borderRadius(24),
+    borderTopRightRadius: responsive.borderRadius(24),
+    padding: responsive.padding(20),
+    paddingBottom: responsive.padding(40),
+    minHeight: responsive.hp(40), 
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
+    shadowOffset: { width: 0, height: -responsive.scale(2) },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: responsive.scale(8),
     elevation: 8,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: responsive.margin(16),
   },
   headerText: {
-    fontSize: 20,
+    fontSize: responsive.fontSize(20),
     fontWeight: '700',
     color: '#222',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: responsive.margin(12),
   },
   input: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: responsive.borderWidth(1),
     borderColor: '#ccc',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
-    marginRight: 8,
+    borderRadius: responsive.borderRadius(10),
+    paddingHorizontal: responsive.padding(12),
+    paddingVertical: responsive.padding(8),
+    fontSize: responsive.fontSize(16),
+    marginRight: responsive.margin(8),
     color: '#222',
     backgroundColor: '#fafafa',
   },
   addBtn: {
     backgroundColor: '#fbeee0',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    borderRadius: responsive.borderRadius(10),
+    paddingHorizontal: responsive.padding(16),
+    paddingVertical: responsive.padding(8),
   },
   addBtnText: {
     color: '#d35400',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: responsive.fontSize(16),
   },
   watchlistRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: responsive.margin(10),
   },
   watchlistText: {
-    fontSize: 16,
+    fontSize: responsive.fontSize(16),
     color: '#222',
   },
 });

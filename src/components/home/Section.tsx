@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import { hp, fontSize } from '../utils/responsive';
-import StockCard from './StockCard';
+import responsive from '../../utils/responsive';
+import StockCard from '../stockCard/StockCard';
+
 
 interface SectionProps {
   title: string;
@@ -57,28 +58,28 @@ const Section = ({ title, data, onViewAll, onStockPress }: SectionProps) => (
 
 const styles = StyleSheet.create({
   sectionContainer: {
-    marginBottom: hp(3),
+    marginBottom: responsive.margin(3),
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: hp(1),
+    marginBottom: responsive.margin(1),
   },
   sectionTitle: {
-    fontSize: fontSize(18),
+    fontSize: responsive.fontSize(18),
     fontWeight: '600',
     color: '#333',
   },
   viewAll: {
-    fontSize: fontSize(14),
+    fontSize: responsive.fontSize(14),
     color: '#007AFF',
     fontWeight: '500',
   },
   row: {
     flex: 1,
     justifyContent: 'space-between',
-    marginBottom: hp(2),
+    marginBottom: responsive.margin(2),
   },
 });
 

@@ -1,6 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { wp, hp, fontSize, borderRadius, padding } from '../utils/responsive';
+import {
+  wp,
+  hp,
+  fontSize,
+  borderRadius,
+  padding,
+} from '../../utils/responsive';
 
 interface CompanyOverview {
   Symbol: string;
@@ -84,7 +90,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
     { label: `Sector: ${displayValue(companyData.Sector)}`, color: '#e0f7fa' },
   ];
 
-  // Create stats from company data
+
   const rawStats = [
     {
       label: 'Market Cap',
@@ -148,7 +154,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         ))}
       </View>
 
-      {/* 52-Week Range Bar */}
+   
       <View style={styles.rangeBarContainer}>
         <View style={styles.rangeLabelCol}>
           <Text style={styles.rangeLabelTitle}>52-Week Low</Text>
@@ -173,7 +179,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         </View>
       </View>
 
-      {/* Stats Grid */}
+    
       <View style={styles.statsGrid}>
         {stats.map((stat, idx) => (
           <View key={stat.label} style={styles.statItem}>

@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Wrap axios instance with cache interceptor
 const cachedAxios = setupCache(axiosInstance);
 
 export default cachedAxios;

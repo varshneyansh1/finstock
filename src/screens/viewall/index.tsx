@@ -18,7 +18,7 @@ import {
   setViewAllType,
   ViewAllType,
 } from '../../store/slice/viewAllGainersLosersSlice';
-import StockCard from '../../components/StockCard';
+import StockCard from '../../components/stockCard/StockCard';
 import { wp, hp, fontSize } from '../../utils/responsive';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -68,7 +68,7 @@ const ViewAll = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header always visible */}
+     
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -81,7 +81,7 @@ const ViewAll = () => {
         </Text>
         <View style={{ width: fontSize(22) }} />
       </View>
-      {/* Content area below header */}
+    
       {loading ? (
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}

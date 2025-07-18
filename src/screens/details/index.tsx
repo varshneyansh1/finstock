@@ -17,9 +17,9 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import WatchlistBottomSheet from '../../components/WatchlistBottomSheet';
-import AboutSection from '../../components/AboutSection';
-import StockGraph from '../../components/StockGraph';
+import WatchlistBottomSheet from '../../components/bottomsheet/WatchlistBottomSheet';
+import AboutSection from '../../components/about/AboutSection';
+import StockGraph from '../../components/stockGraph/StockGraph';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import {
@@ -39,28 +39,27 @@ const Details = () => {
   const symbol = route.params?.symbol || stock.ticker || '';
   const dispatch = useDispatch<AppDispatch>();
 
-  // Redux state for details
+  
   const { companyData, chartData, loading, selectedRange } = useSelector(
     (state: RootState) => state.details,
   );
 
-  // Watchlist modal state
+
   const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
 
-  // Redux watchlists
+
   const watchlists = useSelector((state: RootState) => state.watchlist.lists);
-  // Check if this stock is in any watchlist
+  
   const isInAnyWatchlist = watchlists.some(wl =>
     wl.stocks.some(s => s.symbol === symbol),
   );
 
-  // Fetch all details data on mount and when selectedRange or symbol changes
+
   useEffect(() => {
     if (symbol) {
       dispatch(fetchDetailsData({ symbol, selectedRange }));
     }
-    // Only reset on unmount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+ 
   }, [symbol, selectedRange, dispatch]);
 
   useEffect(() => {
@@ -71,7 +70,7 @@ const Details = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Loader overlay */}
+   
       {loading && (
         <View
           style={{
@@ -104,31 +103,24 @@ const Details = () => {
           />
         </TouchableOpacity>
       </View>
-      {/* Content ScrollView */}
+      
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: hp(4), paddingTop: 0 }}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!loading}
       >
-        {/* Stock Info */}
+     
         <View style={styles.stockInfoRow}>
           <View style={styles.logoCircle}>
-            <Text style={styles.logo}>
-              {companyData?.Logo || '🏦'}
-            </Text>
+            <Text style={styles.logo}>{companyData?.Logo || '🏦'}</Text>
           </View>
           <View style={{ flex: 1, marginLeft: wp(3) }}>
-            <Text style={styles.stockName}>
-              {companyData?.Name || ''}
-            </Text>
+            <Text style={styles.stockName}>{companyData?.Name || ''}</Text>
             <Text style={styles.stockMeta}>
-              {symbol || stock.ticker || ''},{' '}
-              {companyData?.AssetType || ''}
+              {symbol || stock.ticker || ''}, {companyData?.AssetType || ''}
             </Text>
-            <Text style={styles.stockMeta}>
-              {companyData?.Exchange || ''}
-            </Text>
+            <Text style={styles.stockMeta}>{companyData?.Exchange || ''}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={styles.stockPrice}>
@@ -139,7 +131,7 @@ const Details = () => {
               style={[
                 styles.stockChange,
                 {
-                  color: (companyData?.ChangePercent|| '')
+                  color: (companyData?.ChangePercent || '')
                     .toString()
                     .includes('-')
                     ? '#e74c3c'
@@ -152,7 +144,7 @@ const Details = () => {
           </View>
         </View>
 
-        {/* Graph Placeholder */}
+        {/* Graph */}
         <View style={styles.graphContainer}>
           <StockGraph data={chartData} loading={false} />
           {/* Time Range Selector */}
@@ -277,7 +269,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
     alignItems: 'stretch',
-    overflow: 'hidden', // Prevents overflow
+    overflow: 'hidden', 
   },
   graphLine: {
     height: hp(18),

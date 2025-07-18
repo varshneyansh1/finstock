@@ -13,7 +13,7 @@ import { RootState } from '../../store';
 import { deleteWatchlist } from '../../store/slice/watchlistSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { fontSize } from '../../utils/responsive';
-import StockCard from '../../components/StockCard';
+import StockCard from '../../components/stockCard/StockCard';
 
 type StockItem = {
   name: string;

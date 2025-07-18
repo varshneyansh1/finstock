@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { wp, hp, fontSize } from '../utils/responsive';
+import { wp, hp, fontSize } from '../../utils/responsive';
 
 interface StockGraphProps {
   data: any[];
@@ -46,7 +46,6 @@ const StockGraph: React.FC<StockGraphProps> = ({ data, loading }) => {
         showVerticalLines={false}
         showXAxisIndices
         showYAxisIndices
-        // No xAxisLabelTextStyle, no yAxisLabelTexts
       />
     </View>
   );

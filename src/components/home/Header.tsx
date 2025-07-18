@@ -7,8 +7,8 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import { wp, hp, fontSize, borderRadius, padding } from '../utils/responsive';
-import { searchSymbols } from '../api';
+import { searchSymbols } from '../../api';
+import responsive from '../../utils/responsive';
 
 interface HeaderProps {
   appName: string;
@@ -91,56 +91,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingHorizontal: wp(4),
-    marginBottom: hp(2),
-    marginTop: hp(3),
+    paddingHorizontal: responsive.padding(18),
+    marginBottom: responsive.margin(20),
+    marginTop: responsive.margin(10),
   },
   appName: {
-    fontSize: fontSize(20),
+    fontSize: responsive.fontSize(23),
     fontWeight: 'bold',
     color: 'black',
-    marginRight: wp(2),
+    marginRight: responsive.margin(2),
     flexShrink: 1,
     alignSelf: 'flex-start',
   },
   searchContainer: {
-    width: wp(50),
+    width: responsive.wp(50),
     alignItems: 'flex-end',
     position: 'relative',
   },
   searchBar: {
     width: '100%',
-    height: hp(5),
+    height: responsive.hp(5),
     backgroundColor: '#f2f2f2',
-    borderRadius: borderRadius(10),
-    paddingHorizontal: padding(8),
-    fontSize: fontSize(16),
+    borderRadius: responsive.borderRadius(10),
+    paddingHorizontal: responsive.padding(8),
+    fontSize: responsive.fontSize(16),
     color: 'black',
     alignSelf: 'flex-end',
   },
   dropdown: {
     position: 'absolute',
-    top: hp(5.5),
+    top: responsive.hp(5.5),
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    borderRadius: borderRadius(8),
+    borderRadius: responsive.borderRadius(8),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
     zIndex: 10,
-    maxHeight: hp(20),
+    maxHeight: responsive.hp(20),
   },
   dropdownItem: {
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(3),
+    paddingVertical: responsive.padding(1),
+    paddingHorizontal: responsive.padding(3),
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   dropdownText: {
-    fontSize: fontSize(15),
+    fontSize: responsive.fontSize(15),
     color: '#222',
   },
 });

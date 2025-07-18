@@ -33,7 +33,7 @@ export const fetchDetailsData = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      // Fetch company overview, chart data, and global quote in parallel
+     
       const [companyData, chartRaw, globalQuoteRaw] = await Promise.all([
         fetchCompanyOverview(symbol),
         selectedRange === '1D'
@@ -43,7 +43,7 @@ export const fetchDetailsData = createAsyncThunk(
           : fetchMonthlyTimeSeries(symbol),
         fetchGlobalQuote(symbol),
       ]);
-      // Parse chart data
+    
       let timeSeries = null;
       if (selectedRange === '1D') {
         timeSeries = chartRaw['Time Series (Daily)'];
@@ -59,14 +59,14 @@ export const fetchDetailsData = createAsyncThunk(
           .map(([date, val]: any) => ({ value: parseFloat(val['4. close']) }))
           .reverse();
       }
-      // Extract price and change percent from global quote
+      
       const globalQuote =
         globalQuoteRaw && globalQuoteRaw['Global Quote']
           ? globalQuoteRaw['Global Quote']
           : {};
       const price = globalQuote['05. price'] || null;
       const changePercent = globalQuote['10. change percent'] || null;
-      // Merge into companyData
+    
       const mergedCompanyData = {
         ...companyData,
         Price: price,

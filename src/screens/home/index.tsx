@@ -8,12 +8,10 @@ import {
   Text,
 } from 'react-native';
 import { wp, hp } from '../../utils/responsive';
-import Section from '../../components/Section';
-import Header from '../../components/Header';
+import Section from '../../components/home/Section';
+import Header from '../../components/home/Header';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-// Remove direct API import
-// import { fetchTopGainersLosers } from '../../api';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTopGainersLosersThunk } from '../../store/slice/topGainersLosersSlice';
 import { RootState, AppDispatch } from '../../store';
@@ -36,10 +34,7 @@ type RootStackParamList = {
 const Home = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  // Remove local state for gainers/losers/loading
-  // const [loading, setLoading] = useState(true);
-  // const [gainers, setGainers] = useState<any[]>([]);
-  // const [losers, setLosers] = useState<any[]>([]);
+
 
   const dispatch = useDispatch<AppDispatch>();
   const { gainers, losers, loading, error } = useSelector(
