@@ -65,19 +65,23 @@ const WatchlistDetailScreen = () => {
         <FlatList
           data={watchlist.stocks}
           keyExtractor={item => item.symbol}
+          numColumns={2}
+          columnWrapperStyle={styles.gridRow}
           renderItem={({ item }) => (
-            <StockCard
-              name={item.name}
-              price={item.price}
-              changePercentage={item.changePercentage}
-              symbol={item.symbol}
-              onPress={() =>
-                navigation.navigate('Details', {
-                  stock: item,
-                  symbol: item.symbol,
-                })
-              }
-            />
+            <View style={styles.gridItem}>
+              <StockCard
+                name={item.name}
+                price={item.price}
+                changePercentage={item.changePercentage}
+                symbol={item.symbol}
+                onPress={() =>
+                  navigation.navigate('Details', {
+                    stock: item,
+                    symbol: item.symbol,
+                  })
+                }
+              />
+            </View>
           )}
         />
       ) : (
@@ -106,6 +110,17 @@ const styles = StyleSheet.create({
     fontSize: fontSize(20),
     fontWeight: '700',
     color: '#222',
+  },
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  gridItem: {
+    flex: 1,
+    marginHorizontal: 4,
+    marginBottom: 8,
+   
   },
   row: {
     paddingVertical: 12,

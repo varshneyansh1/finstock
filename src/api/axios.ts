@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { setupCache } from 'axios-cache-interceptor';
 import config from '../config';
 
 const axiosInstance = axios.create({
@@ -8,4 +9,7 @@ const axiosInstance = axios.create({
   },
 });
 
-export default axiosInstance;
+// Wrap axios instance with cache interceptor
+const cachedAxios = setupCache(axiosInstance);
+
+export default cachedAxios;

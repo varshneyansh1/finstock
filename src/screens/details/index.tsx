@@ -35,7 +35,6 @@ const Details = () => {
   const route = useRoute() as {
     params?: { stock?: any; symbol?: string };
   };
-  // Remove DUMMY_STOCK fallback, use empty fallback values
   const stock = route.params?.stock || {};
   const symbol = route.params?.symbol || stock.ticker || '';
   const dispatch = useDispatch<AppDispatch>();
@@ -116,30 +115,31 @@ const Details = () => {
         <View style={styles.stockInfoRow}>
           <View style={styles.logoCircle}>
             <Text style={styles.logo}>
-              {companyData?.Logo || stock.logo || '🏦'}
+              {companyData?.Logo || '🏦'}
             </Text>
           </View>
           <View style={{ flex: 1, marginLeft: wp(3) }}>
             <Text style={styles.stockName}>
-              {companyData?.Name || stock.name || 'N/A'}
+              {companyData?.Name || ''}
             </Text>
             <Text style={styles.stockMeta}>
-              {symbol || stock.ticker || 'N/A'},{' '}
-              {companyData?.AssetType || stock.type || 'N/A'}
+              {symbol || stock.ticker || ''},{' '}
+              {companyData?.AssetType || ''}
             </Text>
             <Text style={styles.stockMeta}>
-              {companyData?.Exchange || stock.exchange || 'N/A'}
+              {companyData?.Exchange || ''}
             </Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={styles.stockPrice}>
-              {companyData?.Price || stock.price || 'N/A'}
+              {'$'}
+              {companyData?.Price || ''}
             </Text>
             <Text
               style={[
                 styles.stockChange,
                 {
-                  color: (companyData?.ChangePercent || stock.change || '')
+                  color: (companyData?.ChangePercent|| '')
                     .toString()
                     .includes('-')
                     ? '#e74c3c'
@@ -147,7 +147,7 @@ const Details = () => {
                 },
               ]}
             >
-              {companyData?.ChangePercent || stock.change || ''}
+              {companyData?.ChangePercent || ''}
             </Text>
           </View>
         </View>
@@ -185,7 +185,7 @@ const Details = () => {
         {!loading && (
           <AboutSection
             companyData={companyData}
-            currentPrice={companyData?.Price || stock.price || 'N/A'}
+            currentPrice={companyData?.Price || ''}
           />
         )}
 

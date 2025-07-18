@@ -85,22 +85,48 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   ];
 
   // Create stats from company data
-  const stats = [
+  const rawStats = [
     {
       label: 'Market Cap',
       value: formatMarketCap(companyData.MarketCapitalization),
+      raw: companyData.MarketCapitalization,
     },
-    { label: 'P/E Ratio', value: displayValue(companyData.PERatio) },
-    { label: 'Beta', value: displayValue(companyData.Beta) },
+    {
+      label: 'P/E Ratio',
+      value: displayValue(companyData.PERatio),
+      raw: companyData.PERatio,
+    },
+    {
+      label: 'Beta',
+      value: displayValue(companyData.Beta),
+      raw: companyData.Beta,
+    },
     {
       label: 'Dividend Yield',
       value: formatPercentage(companyData.DividendYield),
+      raw: companyData.DividendYield,
     },
     {
       label: 'Profit Margin',
       value: formatPercentage(companyData.ProfitMargin),
+      raw: companyData.ProfitMargin,
     },
   ];
+
+  // Only include stats where the raw value is not null/empty/none/undefined
+  const stats = rawStats.filter(stat => {
+    const v = stat.raw;
+    if (
+      v === undefined ||
+      v === null ||
+      v === '' ||
+      (typeof v === 'string' &&
+        (v.toLowerCase() === 'none' || v === 'null' || v === 'undefined'))
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <View style={styles.aboutSection}>

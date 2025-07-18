@@ -4,6 +4,7 @@ import {
   fetchDailyTimeSeries,
   fetchWeeklyTimeSeries,
   fetchMonthlyTimeSeries,
+  fetchGlobalQuote, 
 } from '../../api';
 
 interface DetailsState {
@@ -32,14 +33,15 @@ export const fetchDetailsData = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      // Fetch company overview and chart data in parallel
-      const [companyData, chartRaw] = await Promise.all([
+      // Fetch company overview, chart data, and global quote in parallel
+      const [companyData, chartRaw, globalQuoteRaw] = await Promise.all([
         fetchCompanyOverview(symbol),
         selectedRange === '1D'
           ? fetchDailyTimeSeries(symbol)
           : selectedRange === '1W'
           ? fetchWeeklyTimeSeries(symbol)
           : fetchMonthlyTimeSeries(symbol),
+        fetchGlobalQuote(symbol),
       ]);
       // Parse chart data
       let timeSeries = null;
@@ -57,7 +59,20 @@ export const fetchDetailsData = createAsyncThunk(
           .map(([date, val]: any) => ({ value: parseFloat(val['4. close']) }))
           .reverse();
       }
-      return { companyData, chartData };
+      // Extract price and change percent from global quote
+      const globalQuote =
+        globalQuoteRaw && globalQuoteRaw['Global Quote']
+          ? globalQuoteRaw['Global Quote']
+          : {};
+      const price = globalQuote['05. price'] || null;
+      const changePercent = globalQuote['10. change percent'] || null;
+      // Merge into companyData
+      const mergedCompanyData = {
+        ...companyData,
+        Price: price,
+        ChangePercent: changePercent,
+      };
+      return { companyData: mergedCompanyData, chartData };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch details data');
     }
