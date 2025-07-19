@@ -8,7 +8,6 @@ import {
   FlatList,
   StyleSheet,
 } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
@@ -19,6 +18,7 @@ import {
   StockItem,
 } from '../../store/slice/watchlistSlice';
 import responsive from '../../utils/responsive';
+import Toast from 'react-native-toast-message';
 
 interface WatchlistBottomSheetProps {
   visible: boolean;
@@ -42,6 +42,15 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
   const handleAddWatchlist = (name: string) => {
     if (name.trim() && !watchlists.find(w => w.name === name.trim())) {
       dispatch(createWatchlist(name.trim()));
+      Toast.show({
+        type: 'success',
+        text1: 'Watchlist Created',
+        text2: `"${name.trim()}" has been created successfully`,
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
     }
   };
 
@@ -53,20 +62,33 @@ const WatchlistBottomSheet: React.FC<WatchlistBottomSheetProps> = ({
       dispatch(
         removeStockFromWatchlist({ watchlistName: name, symbol: stock.symbol }),
       );
+      Toast.show({
+        type: 'info',
+        text1: 'Stock Removed',
+        text2: `${stock.symbol} has been removed from "${name}"`,
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
     } else {
       dispatch(addStockToWatchlist({ watchlistName: name, stock }));
+      Toast.show({
+        type: 'success',
+        text1: 'Stock Added',
+        text2: `${stock.symbol} has been added to "${name}"`,
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
     }
   };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.container}>
-        <BlurView
-          style={StyleSheet.absoluteFill}
-          blurType="light"
-          blurAmount={2}
-          reducedTransparencyFallbackColor="rgba(0,0,0,0.2)"
-        />
+        <View style={styles.overlay} />
         <View style={styles.sheet}>
           <View style={styles.headerRow}>
             <Text style={styles.headerText}>Add to Watchlist</Text>
@@ -131,6 +153,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
   sheet: {
     width: '100%',
     backgroundColor: '#fff',
@@ -138,7 +168,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: responsive.borderRadius(24),
     padding: responsive.padding(20),
     paddingBottom: responsive.padding(40),
-    minHeight: responsive.hp(40), 
+    minHeight: responsive.hp(40),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -responsive.scale(2) },
     shadowOpacity: 0.1,

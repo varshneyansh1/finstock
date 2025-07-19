@@ -12,6 +12,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { deleteWatchlist } from '../../store/slice/watchlistSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import SafeScreen from '../../components/SafeScreen';
 import { fontSize } from '../../utils/responsive';
 import StockCard from '../../components/stockCard/StockCard';
 
@@ -45,60 +46,65 @@ const WatchlistDetailScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ marginRight: 10 }}
-        >
-          <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>{name}</Text>
-        <TouchableOpacity
-          onPress={handleDelete}
-          style={{ marginLeft: 'auto', paddingLeft: 16 }}
-        >
-          <Ionicons name="trash-outline" size={fontSize(22)} color="#e74c3c" />
-        </TouchableOpacity>
-      </View>
-      {watchlist && watchlist.stocks.length > 0 ? (
-        <FlatList
-          data={watchlist.stocks}
-          keyExtractor={item => item.symbol}
-          numColumns={2}
-          columnWrapperStyle={styles.gridRow}
-          renderItem={({ item }) => (
-            <View style={styles.gridItem}>
-              <StockCard
-                name={item.name}
-                price={item.price}
-                changePercentage={item.changePercentage}
-                symbol={item.symbol}
-                onPress={() =>
-                  navigation.navigate('Details', {
-                    stock: item,
-                    symbol: item.symbol,
-                  })
-                }
-              />
-            </View>
-          )}
-        />
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={{ color: '#888', fontSize: fontSize(16) }}>
-            No stocks in this watchlist.
-          </Text>
+    <SafeScreen>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ marginRight: 10 }}
+          >
+            <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>{name}</Text>
+          <TouchableOpacity
+            onPress={handleDelete}
+            style={{ marginLeft: 'auto', paddingLeft: 16 }}
+          >
+            <Ionicons
+              name="trash-outline"
+              size={fontSize(22)}
+              color="#e74c3c"
+            />
+          </TouchableOpacity>
         </View>
-      )}
-    </View>
+        {watchlist && watchlist.stocks.length > 0 ? (
+          <FlatList
+            data={watchlist.stocks}
+            keyExtractor={item => item.symbol}
+            numColumns={2}
+            columnWrapperStyle={styles.gridRow}
+            renderItem={({ item }) => (
+              <View style={styles.gridItem}>
+                <StockCard
+                  name={item.name}
+                  price={item.price}
+                  changePercentage={item.changePercentage}
+                  symbol={item.symbol}
+                  onPress={() =>
+                    navigation.navigate('Details', {
+                      stock: item,
+                      symbol: item.symbol,
+                    })
+                  }
+                />
+              </View>
+            )}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={{ color: '#888', fontSize: fontSize(16) }}>
+              No stocks in this watchlist.
+            </Text>
+          </View>
+        )}
+      </View>
+    </SafeScreen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
   },
   headerRow: {
@@ -120,7 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 4,
     marginBottom: 8,
-   
   },
   row: {
     paddingVertical: 12,

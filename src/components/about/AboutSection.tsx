@@ -57,27 +57,27 @@ const AboutSection: React.FC<AboutSectionProps> = ({
       value === 'null' ||
       value === 'undefined'
     ) {
-      return 'N/A';
+      return ' ';
     }
     return value;
   };
 
-  // Format market cap to readable format
+
   const formatMarketCap = (marketCap: string) => {
-    if (!marketCap || marketCap.toLowerCase() === 'none') return 'N/A';
+    if (!marketCap || marketCap.toLowerCase() === 'none') return ' ';
     const num = parseFloat(marketCap);
-    if (isNaN(num)) return 'N/A';
+    if (isNaN(num)) return ' ';
     if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     return `$${num.toLocaleString()}`;
   };
 
-  // Format percentage
+
   const formatPercentage = (value: string) => {
-    if (!value || value.toLowerCase() === 'none') return 'N/A';
+    if (!value || value.toLowerCase() === 'none') return ' ';
     const num = parseFloat(value);
-    if (isNaN(num)) return 'N/A';
+    if (isNaN(num)) return ' ';
     return `${(num * 100).toFixed(2)}%`;
   };
 

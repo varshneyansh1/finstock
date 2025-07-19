@@ -18,16 +18,23 @@ const StockCard = ({
   changePercentage,
   symbol,
   onPress,
-}: StockCardProps) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.iconCircle}>
-      <Text style={styles.icon}>{DEFAULT_ICON}</Text>
-    </View>
-    <Text style={styles.stockName}>{name}</Text>
-    <Text style={styles.stockPrice}>{price}</Text>
-    <Text style={styles.stockChange}>{changePercentage}</Text>
-  </TouchableOpacity>
-);
+}: StockCardProps) => {
+  const isNegative =
+    changePercentage.startsWith('-') || parseFloat(changePercentage) < 0;
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.iconCircle}>
+        <Text style={styles.icon}>{DEFAULT_ICON}</Text>
+      </View>
+      <Text style={styles.stockName}>{name}</Text>
+      <Text style={styles.stockPrice}>{price}</Text>
+      <Text style={[styles.stockChange, isNegative && styles.negativeChange]}>
+        {changePercentage}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -64,6 +71,9 @@ const styles = StyleSheet.create({
     fontSize: fontSize(13),
     color: '#008000',
     marginTop: hp(0.5),
+  },
+  negativeChange: {
+    color: '#ff0000',
   },
 });
 

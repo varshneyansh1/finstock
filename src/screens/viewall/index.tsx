@@ -19,6 +19,7 @@ import {
   ViewAllType,
 } from '../../store/slice/viewAllGainersLosersSlice';
 import StockCard from '../../components/stockCard/StockCard';
+import SafeScreen from '../../components/SafeScreen';
 import { wp, hp, fontSize } from '../../utils/responsive';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -67,71 +68,74 @@ const ViewAll = () => {
   };
 
   return (
-    <View style={styles.container}>
-     
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
-          <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>
-          {type === 'losers' ? 'Top Losers' : 'Top Gainers'}
-        </Text>
-        <View style={{ width: fontSize(22) }} />
-      </View>
-    
-      {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
-      ) : error ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text style={{ color: 'red', fontSize: fontSize(16) }}>{error}</Text>
-        </View>
-      ) : allData.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text style={{ fontSize: fontSize(16), color: '#888' }}>
-            No data available
+    <SafeScreen>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>
+            {type === 'losers' ? 'Top Losers' : 'Top Gainers'}
           </Text>
+          <View style={{ width: fontSize(22) }} />
         </View>
-      ) : (
-        <FlatList
-          data={displayed}
-          keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          renderItem={({ item }: { item: StockItem }) => (
-            <StockCard
-              name={item.name}
-              price={item.price}
-              changePercentage={item.changePercentage}
-              symbol={item.symbol}
-              onPress={() => handleStockPress(item)}
-            />
-          )}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            displayed.length < allData.length ? (
-              <ActivityIndicator
-                style={styles.pagination}
-                size="small"
-                color="#888"
+
+        {loading ? (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        ) : error ? (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <Text style={{ color: 'red', fontSize: fontSize(16) }}>
+              {error}
+            </Text>
+          </View>
+        ) : allData.length === 0 ? (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <Text style={{ fontSize: fontSize(16), color: '#888' }}>
+              No data available
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={displayed}
+            keyExtractor={item => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            renderItem={({ item }: { item: StockItem }) => (
+              <StockCard
+                name={item.name}
+                price={item.price}
+                changePercentage={item.changePercentage}
+                symbol={item.symbol}
+                onPress={() => handleStockPress(item)}
               />
-            ) : null
-          }
-          contentContainerStyle={styles.listContent}
-        />
-      )}
-    </View>
+            )}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              displayed.length < allData.length ? (
+                <ActivityIndicator
+                  style={styles.pagination}
+                  size="small"
+                  color="#888"
+                />
+              ) : null
+            }
+            contentContainerStyle={styles.listContent}
+          />
+        )}
+      </View>
+    </SafeScreen>
   );
 };
 
@@ -140,7 +144,6 @@ export default ViewAll;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingHorizontal: wp(2),
     paddingTop: hp(2),
   },

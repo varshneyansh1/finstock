@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Text,
@@ -10,6 +9,7 @@ import {
 import { wp, hp } from '../../utils/responsive';
 import Section from '../../components/home/Section';
 import Header from '../../components/home/Header';
+import SafeScreen from '../../components/SafeScreen';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,7 +35,6 @@ const Home = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-
   const dispatch = useDispatch<AppDispatch>();
   const { gainers, losers, loading, error } = useSelector(
     (state: RootState) => state.topGainersLosers,
@@ -57,32 +56,32 @@ const Home = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeScreen>
         <Header appName="FinStock" searchPlaceholder="Search here..." />
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         >
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
-      </SafeAreaView>
+      </SafeScreen>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeScreen>
         <Header appName="FinStock" searchPlaceholder="Search here..." />
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         >
           <Text style={{ color: 'red' }}>{error}</Text>
         </View>
-      </SafeAreaView>
+      </SafeScreen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeScreen>
       <Header
         appName="FinStock"
         searchPlaceholder="Search here..."
@@ -116,17 +115,13 @@ const Home = () => {
           onStockPress={handleStockPress}
         />
       </ScrollView>
-    </SafeAreaView>
+    </SafeScreen>
   );
 };
 
 export default Home;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   scrollContent: {
     paddingHorizontal: wp(4),
   },

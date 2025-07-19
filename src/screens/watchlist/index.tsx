@@ -14,6 +14,7 @@ import {
   borderRadius,
   padding,
 } from '../../utils/responsive';
+import SafeScreen from '../../components/SafeScreen';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { deleteWatchlist } from '../../store/slice/watchlistSlice';
@@ -40,44 +41,46 @@ const WatchlistScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Watchlist</Text>
-      </View>
-      <View style={styles.separator} />
-      {watchlists.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text style={{ color: '#888', fontSize: fontSize(16) }}>
-            No watchlists yet. Add one from the details screen!
-          </Text>
+    <SafeScreen>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Watchlist</Text>
         </View>
-      ) : (
-        <FlatList
-          data={watchlists}
-          keyExtractor={item => item.name}
-          renderItem={({ item, index }) => (
-            <>
-              <TouchableOpacity
-                style={styles.row}
-                onPress={() => handlePress(item.name)}
-              >
-                <Text style={styles.rowText}>{item.name}</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={fontSize(22)}
-                  color="#222"
-                />
-              </TouchableOpacity>
-              {index < watchlists.length - 1 && (
-                <View style={styles.separator} />
-              )}
-            </>
-          )}
-        />
-      )}
-    </View>
+        <View style={styles.separator} />
+        {watchlists.length === 0 ? (
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <Text style={{ color: '#888', fontSize: fontSize(16) }}>
+              No watchlists yet. Add one from the details screen!
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={watchlists}
+            keyExtractor={item => item.name}
+            renderItem={({ item, index }) => (
+              <>
+                <TouchableOpacity
+                  style={styles.row}
+                  onPress={() => handlePress(item.name)}
+                >
+                  <Text style={styles.rowText}>{item.name}</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={fontSize(22)}
+                    color="#222"
+                  />
+                </TouchableOpacity>
+                {index < watchlists.length - 1 && (
+                  <View style={styles.separator} />
+                )}
+              </>
+            )}
+          />
+        )}
+      </View>
+    </SafeScreen>
   );
 };
 
@@ -86,7 +89,6 @@ export default WatchlistScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     overflow: 'hidden',
   },
   header: {

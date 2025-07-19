@@ -14,6 +14,7 @@ import {
   borderRadius,
   padding,
 } from '../../utils/responsive';
+import SafeScreen from '../../components/SafeScreen';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -39,27 +40,22 @@ const Details = () => {
   const symbol = route.params?.symbol || stock.ticker || '';
   const dispatch = useDispatch<AppDispatch>();
 
-  
   const { companyData, chartData, loading, selectedRange } = useSelector(
     (state: RootState) => state.details,
   );
 
-
   const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
 
-
   const watchlists = useSelector((state: RootState) => state.watchlist.lists);
-  
+
   const isInAnyWatchlist = watchlists.some(wl =>
     wl.stocks.some(s => s.symbol === symbol),
   );
-
 
   useEffect(() => {
     if (symbol) {
       dispatch(fetchDetailsData({ symbol, selectedRange }));
     }
- 
   }, [symbol, selectedRange, dispatch]);
 
   useEffect(() => {
@@ -69,8 +65,7 @@ const Details = () => {
   }, [dispatch]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
-   
+    <SafeScreen>
       {loading && (
         <View
           style={{
@@ -103,14 +98,13 @@ const Details = () => {
           />
         </TouchableOpacity>
       </View>
-      
+
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: hp(4), paddingTop: 0 }}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!loading}
       >
-     
         <View style={styles.stockInfoRow}>
           <View style={styles.logoCircle}>
             <Text style={styles.logo}>{companyData?.Logo || '🏦'}</Text>
@@ -192,7 +186,7 @@ const Details = () => {
           }}
         />
       </ScrollView>
-    </View>
+    </SafeScreen>
   );
 };
 
@@ -201,7 +195,6 @@ export default Details;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingHorizontal: wp(4),
   },
   headerRow: {
@@ -269,7 +262,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
     alignItems: 'stretch',
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   graphLine: {
     height: hp(18),
