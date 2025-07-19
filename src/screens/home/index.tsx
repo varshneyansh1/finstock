@@ -12,6 +12,7 @@ import LoadingState from '../../components/LoadingState';
 import ErrorState from '../../components/ErrorState';
 import { wp, hp } from '../../utils/responsive';
 import NetInfo from '@react-native-community/netinfo';
+import { checkNetworkConnectivity } from '../../utils/networkUtils';
 
 type RootStackParamList = {
   HomeScreen: undefined;
@@ -37,6 +38,8 @@ const Home = () => {
     (state: RootState) => state.topGainersLosers,
   );
 
+  const [isOnline, setIsOnline] = useState<boolean | null>(null);
+
   const handleStockPress = (item: {
     id: string;
     name: string;
@@ -47,26 +50,63 @@ const Home = () => {
     navigation.navigate('Details', { stock: item, symbol: item.symbol });
   };
 
-  const handleRetry = () => {
-    dispatch(fetchTopGainersLosersThunk());
+  const handleRetry = async () => {
+    const connected = await checkNetworkConnectivity();
+    if (connected) {
+      dispatch(fetchTopGainersLosersThunk());
+    }
   };
 
   useEffect(() => {
-    // Initial data fetch
-    dispatch(fetchTopGainersLosersThunk());
+    let isMounted = true;
 
-    // Listen for network changes to auto-retry when connection is restored
+    const initializeApp = async () => {
+      // Check network connectivity first
+      const connected = await checkNetworkConnectivity();
+      if (isMounted) {
+        setIsOnline(connected);
+
+        // Only fetch data if we're online
+        if (connected) {
+          dispatch(fetchTopGainersLosersThunk());
+        }
+      }
+    };
+
+    initializeApp();
+
+    // Listen for network changes
     const unsubscribe = NetInfo.addEventListener(state => {
       const connected = state.isConnected ?? false;
 
-      // If we just got connected and there's an error, retry
-      if (connected && error) {
-        dispatch(fetchTopGainersLosersThunk());
+      if (isMounted) {
+        setIsOnline(connected);
+
+        // If we just got connected and there's an error, retry
+        if (connected && error && !loading) {
+          dispatch(fetchTopGainersLosersThunk());
+        }
       }
     });
 
-    return () => unsubscribe();
-  }, [dispatch, error]);
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, [dispatch]); // Removed error from dependencies to prevent infinite loop
+
+  // Show network error if offline and no data
+  if (isOnline === false && gainers.length === 0 && losers.length === 0) {
+    return (
+      <SafeScreen>
+        <Header appName="FinStock" searchPlaceholder="Search here..." />
+        <ErrorState
+          error="No internet connection. Please check your network and try again."
+          onRetry={handleRetry}
+        />
+      </SafeScreen>
+    );
+  }
 
   if (loading) {
     return (
