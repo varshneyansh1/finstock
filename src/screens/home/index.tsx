@@ -86,6 +86,19 @@ const Home = () => {
     );
   }
 
+  // Show API limit reached if both gainers and losers are empty
+  if (gainers.length === 0 && losers.length === 0) {
+    return (
+      <SafeScreen>
+        <Header appName="FinStock" searchPlaceholder="Search here..." />
+        <ErrorState
+          error="API limit reached, try again later."
+          showRetry={false}
+        />
+      </SafeScreen>
+    );
+  }
+
   return (
     <SafeScreen>
       <Header

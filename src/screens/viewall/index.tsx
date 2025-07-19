@@ -96,13 +96,10 @@ const ViewAll = () => {
         ) : error ? (
           <ErrorState error={error} onRetry={handleRetry} />
         ) : allData.length === 0 ? (
-          <View
-            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          >
-            <Text style={{ fontSize: fontSize(16), color: '#888' }}>
-              No data available
-            </Text>
-          </View>
+          <ErrorState
+            error="API limit reached, try again later."
+            showRetry={false}
+          />
         ) : (
           <FlatList
             data={displayed}

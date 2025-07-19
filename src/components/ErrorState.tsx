@@ -15,7 +15,9 @@ const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.errorText}>{error}</Text>
+      <View style={styles.errorCard}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
       {showRetry && onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
           <Text style={styles.retryButtonText}>Retry</Text>
@@ -32,11 +34,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
+  errorCard: {
+    backgroundColor: '#fff3cd', // soft warning yellow
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ffeeba',
+    marginBottom: 20,
+    alignItems: 'center',
+    maxWidth: 320,
+  },
   errorText: {
-    color: 'red',
+    color: '#856404', // dark yellow/brown for warning
     fontSize: fontSize(16),
     textAlign: 'center',
-    marginBottom: 20,
+    fontWeight: '600',
+    marginBottom: 0,
   },
   retryButton: {
     backgroundColor: '#007AFF',

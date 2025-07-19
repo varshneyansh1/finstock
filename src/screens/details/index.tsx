@@ -68,10 +68,8 @@ const Details = () => {
   useEffect(() => {
     if (symbol) {
       if (companyData) {
-     
         dispatch(fetchChartData({ symbol, selectedRange }));
       } else {
-       
         dispatch(fetchDetailsData({ symbol, selectedRange }));
       }
     }
@@ -97,6 +95,28 @@ const Details = () => {
           <View style={{ width: fontSize(22) }} />
         </View>
         <ErrorState error={error} onRetry={handleRetry} />
+      </SafeScreen>
+    );
+  }
+
+  // Show API limit reached if no companyData and not loading or error
+  if (!companyData && !loading && !error) {
+    return (
+      <SafeScreen>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={{ marginRight: 10 }}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Details Screen</Text>
+          <View style={{ width: fontSize(22) }} />
+        </View>
+        <ErrorState
+          error="API limit reached, try again later."
+          showRetry={false}
+        />
       </SafeScreen>
     );
   }
@@ -308,7 +328,7 @@ const styles = StyleSheet.create({
     borderColor: '#f0f0f0',
     alignItems: 'stretch',
     overflow: 'hidden',
-    minHeight: hp(22), 
+    minHeight: hp(22),
   },
   graphLine: {
     height: hp(18),
