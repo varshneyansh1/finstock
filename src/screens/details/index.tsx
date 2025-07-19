@@ -25,9 +25,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import {
   fetchDetailsData,
+  fetchChartData,
   setSelectedRange,
   resetDetails,
 } from '../../store/slice/detailsSlice';
+import ErrorState from '../../components/ErrorState';
 
 const TIME_RANGES = ['1D', '1W', '1M'];
 
@@ -40,9 +42,14 @@ const Details = () => {
   const symbol = route.params?.symbol || stock.ticker || '';
   const dispatch = useDispatch<AppDispatch>();
 
-  const { companyData, chartData, loading, selectedRange } = useSelector(
-    (state: RootState) => state.details,
-  );
+  const {
+    companyData,
+    chartData,
+    loading,
+    chartLoading,
+    selectedRange,
+    error,
+  } = useSelector((state: RootState) => state.details);
 
   const [watchlistModalVisible, setWatchlistModalVisible] = useState(false);
 
@@ -52,17 +59,47 @@ const Details = () => {
     wl.stocks.some(s => s.symbol === symbol),
   );
 
-  useEffect(() => {
+  const handleRetry = () => {
     if (symbol) {
       dispatch(fetchDetailsData({ symbol, selectedRange }));
     }
-  }, [symbol, selectedRange, dispatch]);
+  };
+
+  useEffect(() => {
+    if (symbol) {
+      if (companyData) {
+     
+        dispatch(fetchChartData({ symbol, selectedRange }));
+      } else {
+       
+        dispatch(fetchDetailsData({ symbol, selectedRange }));
+      }
+    }
+  }, [symbol, selectedRange, dispatch, companyData]);
 
   useEffect(() => {
     return () => {
       dispatch(resetDetails());
     };
   }, [dispatch]);
+
+  if (error && !loading) {
+    return (
+      <SafeScreen>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={{ marginRight: 10 }}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={fontSize(22)} color="#222" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Details Screen</Text>
+          <View style={{ width: fontSize(22) }} />
+        </View>
+        <ErrorState error={error} onRetry={handleRetry} />
+      </SafeScreen>
+    );
+  }
 
   return (
     <SafeScreen>
@@ -140,7 +177,11 @@ const Details = () => {
 
         {/* Graph */}
         <View style={styles.graphContainer}>
-          <StockGraph data={chartData} loading={false} />
+          <StockGraph
+            key={`${symbol}-${selectedRange}`}
+            data={chartData}
+            loading={chartLoading}
+          />
           {/* Time Range Selector */}
           <View style={styles.timeRangeRow}>
             {TIME_RANGES.map(range => (
@@ -149,15 +190,19 @@ const Details = () => {
                 style={[
                   styles.timeRangeBtn,
                   selectedRange === range && styles.timeRangeBtnActive,
+                  chartLoading && styles.timeRangeBtnDisabled,
                 ]}
                 onPress={() =>
+                  !chartLoading &&
                   dispatch(setSelectedRange(range as '1D' | '1W' | '1M'))
                 }
+                disabled={chartLoading}
               >
                 <Text
                   style={[
                     styles.timeRangeText,
                     selectedRange === range && styles.timeRangeTextActive,
+                    chartLoading && styles.timeRangeTextDisabled,
                   ]}
                 >
                   {range}
@@ -168,7 +213,7 @@ const Details = () => {
         </View>
 
         {/* About Section */}
-        {!loading && (
+        {companyData && (
           <AboutSection
             companyData={companyData}
             currentPrice={companyData?.Price || ''}
@@ -263,6 +308,7 @@ const styles = StyleSheet.create({
     borderColor: '#f0f0f0',
     alignItems: 'stretch',
     overflow: 'hidden',
+    minHeight: hp(22), 
   },
   graphLine: {
     height: hp(18),
@@ -274,6 +320,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: hp(1),
+    minHeight: hp(4),
   },
   timeRangeBtn: {
     paddingHorizontal: wp(3),
@@ -285,6 +332,9 @@ const styles = StyleSheet.create({
   timeRangeBtnActive: {
     backgroundColor: '#fbeee0',
   },
+  timeRangeBtnDisabled: {
+    opacity: 0.5,
+  },
   timeRangeText: {
     fontSize: fontSize(13),
     color: '#888',
@@ -293,5 +343,9 @@ const styles = StyleSheet.create({
   timeRangeTextActive: {
     color: '#d35400',
     fontWeight: '700',
+  },
+  timeRangeTextDisabled: {
+    color: '#ccc',
+    fontWeight: '500',
   },
 });

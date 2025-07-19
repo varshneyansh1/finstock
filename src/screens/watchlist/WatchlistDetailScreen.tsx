@@ -76,7 +76,7 @@ const WatchlistDetailScreen = () => {
             renderItem={({ item }) => (
               <View style={styles.gridItem}>
                 <StockCard
-                  name={item.name}
+                  name={item.symbol || item.name}
                   price={item.price}
                   changePercentage={item.changePercentage}
                   symbol={item.symbol}

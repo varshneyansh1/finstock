@@ -7,7 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import { searchSymbols } from '../../api';
+import { searchStocks } from '../../api';
 import responsive from '../../utils/responsive';
 
 interface HeaderProps {
@@ -32,7 +32,7 @@ const Header = ({ appName, searchPlaceholder, onResultPress }: HeaderProps) => {
     }
     timeoutRef.current = setTimeout(async () => {
       try {
-        const data = await searchSymbols(text);
+        const data = await searchStocks(text);
         setResults(data.bestMatches || []);
         setShowDropdown(true);
       } catch {

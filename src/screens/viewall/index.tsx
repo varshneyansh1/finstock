@@ -20,6 +20,8 @@ import {
 } from '../../store/slice/viewAllGainersLosersSlice';
 import StockCard from '../../components/stockCard/StockCard';
 import SafeScreen from '../../components/SafeScreen';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
 import { wp, hp, fontSize } from '../../utils/responsive';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -63,6 +65,12 @@ const ViewAll = () => {
     dispatch(loadMoreViewAll());
   }, [loadingMore, displayed.length, allData.length, dispatch]);
 
+  const handleRetry = () => {
+    dispatch(resetViewAllState());
+    dispatch(setViewAllType(type));
+    dispatch(fetchViewAllGainersLosers(type as ViewAllType));
+  };
+
   const handleStockPress = (item: StockItem) => {
     navigation.navigate('Details', { stock: item, symbol: item.symbol });
   };
@@ -84,19 +92,9 @@ const ViewAll = () => {
         </View>
 
         {loading ? (
-          <View
-            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          >
-            <ActivityIndicator size="large" color="#007AFF" />
-          </View>
+          <LoadingState />
         ) : error ? (
-          <View
-            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          >
-            <Text style={{ color: 'red', fontSize: fontSize(16) }}>
-              {error}
-            </Text>
-          </View>
+          <ErrorState error={error} onRetry={handleRetry} />
         ) : allData.length === 0 ? (
           <View
             style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}

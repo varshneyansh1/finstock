@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   headers: {
     'content-type': 'application/json',
   },
+  timeout: 10000, // 10 seconds timeout
 });
 
 const cachedAxios = setupCache(axiosInstance);

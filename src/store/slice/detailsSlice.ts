@@ -4,13 +4,14 @@ import {
   fetchDailyTimeSeries,
   fetchWeeklyTimeSeries,
   fetchMonthlyTimeSeries,
-  fetchGlobalQuote, 
+  fetchGlobalQuote,
 } from '../../api';
 
 interface DetailsState {
   companyData: any | null;
   chartData: any[];
   loading: boolean;
+  chartLoading: boolean;
   error: string | null;
   selectedRange: '1D' | '1W' | '1M';
 }
@@ -19,6 +20,7 @@ const initialState: DetailsState = {
   companyData: null,
   chartData: [],
   loading: false,
+  chartLoading: false,
   error: null,
   selectedRange: '1D',
 };
@@ -33,7 +35,6 @@ export const fetchDetailsData = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-     
       const [companyData, chartRaw, globalQuoteRaw] = await Promise.all([
         fetchCompanyOverview(symbol),
         selectedRange === '1D'
@@ -43,7 +44,7 @@ export const fetchDetailsData = createAsyncThunk(
           : fetchMonthlyTimeSeries(symbol),
         fetchGlobalQuote(symbol),
       ]);
-    
+
       let timeSeries = null;
       if (selectedRange === '1D') {
         timeSeries = chartRaw['Time Series (Daily)'];
@@ -59,14 +60,14 @@ export const fetchDetailsData = createAsyncThunk(
           .map(([date, val]: any) => ({ value: parseFloat(val['4. close']) }))
           .reverse();
       }
-      
+
       const globalQuote =
         globalQuoteRaw && globalQuoteRaw['Global Quote']
           ? globalQuoteRaw['Global Quote']
           : {};
       const price = globalQuote['05. price'] || null;
       const changePercent = globalQuote['10. change percent'] || null;
-    
+
       const mergedCompanyData = {
         ...companyData,
         Price: price,
@@ -75,6 +76,47 @@ export const fetchDetailsData = createAsyncThunk(
       return { companyData: mergedCompanyData, chartData };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch details data');
+    }
+  },
+);
+
+export const fetchChartData = createAsyncThunk(
+  'details/fetchChartData',
+  async (
+    {
+      symbol,
+      selectedRange,
+    }: { symbol: string; selectedRange: '1D' | '1W' | '1M' },
+    { rejectWithValue },
+  ) => {
+    try {
+      const chartRaw = await (selectedRange === '1D'
+        ? fetchDailyTimeSeries(symbol)
+        : selectedRange === '1W'
+        ? fetchWeeklyTimeSeries(symbol)
+        : fetchMonthlyTimeSeries(symbol));
+
+      let timeSeries = null;
+      if (selectedRange === '1D') {
+        timeSeries = chartRaw['Time Series (Daily)'];
+      } else if (selectedRange === '1W') {
+        timeSeries = chartRaw['Weekly Time Series'];
+      } else if (selectedRange === '1M') {
+        timeSeries = chartRaw['Monthly Time Series'];
+      }
+      let chartData: any[] = [];
+      if (timeSeries) {
+        chartData = Object.entries(timeSeries)
+          .slice(0, selectedRange === '1D' ? 16 : 12)
+          .map(([date, val]: any) => ({
+            value: parseFloat(val['4. close']),
+          }))
+          .reverse();
+      }
+
+      return { chartData };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch chart data');
     }
   },
 );
@@ -90,6 +132,7 @@ const detailsSlice = createSlice({
       state.companyData = null;
       state.chartData = [];
       state.loading = false;
+      state.chartLoading = false;
       state.error = null;
       state.selectedRange = '1D';
     },
@@ -109,9 +152,21 @@ const detailsSlice = createSlice({
       .addCase(fetchDetailsData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchChartData.pending, state => {
+        state.chartLoading = true;
+      })
+      .addCase(fetchChartData.fulfilled, (state, action) => {
+        state.chartLoading = false;
+        state.chartData = action.payload.chartData;
+      })
+      .addCase(fetchChartData.rejected, (state, action) => {
+        state.chartLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
 export const { setSelectedRange, resetDetails } = detailsSlice.actions;
+export { fetchDetailsData, fetchChartData };
 export default detailsSlice.reducer;

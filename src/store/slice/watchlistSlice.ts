@@ -14,10 +14,14 @@ export interface Watchlist {
 
 interface WatchlistState {
   lists: Watchlist[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: WatchlistState = {
   lists: [],
+  loading: false,
+  error: null,
 };
 
 const watchlistSlice = createSlice({
@@ -52,6 +56,15 @@ const watchlistSlice = createSlice({
     deleteWatchlist: (state, action: PayloadAction<string>) => {
       state.lists = state.lists.filter(w => w.name !== action.payload);
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    clearError: state => {
+      state.error = null;
+    },
   },
 });
 
@@ -60,6 +73,9 @@ export const {
   addStockToWatchlist,
   removeStockFromWatchlist,
   deleteWatchlist,
+  setLoading,
+  setError,
+  clearError,
 } = watchlistSlice.actions;
 
 export default watchlistSlice.reducer;

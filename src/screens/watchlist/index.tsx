@@ -1,10 +1,10 @@
 import React from 'react';
 import {
   View,
-  Text,
+  FlatList,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
+  Text,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
@@ -15,9 +15,11 @@ import {
   padding,
 } from '../../utils/responsive';
 import SafeScreen from '../../components/SafeScreen';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
-import { deleteWatchlist } from '../../store/slice/watchlistSlice';
+import { deleteWatchlist, clearError } from '../../store/slice/watchlistSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -28,6 +30,8 @@ export type WatchListStackParamList = {
 
 const WatchlistScreen = () => {
   const watchlists = useSelector((state: RootState) => state.watchlist.lists);
+  const loading = useSelector((state: RootState) => state.watchlist.loading);
+  const error = useSelector((state: RootState) => state.watchlist.error);
   const dispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<WatchListStackParamList>>();
@@ -39,6 +43,38 @@ const WatchlistScreen = () => {
   const handlePress = (name: string) => {
     navigation.navigate('WatchlistDetail', { name });
   };
+
+  const handleRetry = () => {
+    dispatch(clearError());
+  };
+
+  if (loading) {
+    return (
+      <SafeScreen>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Watchlist</Text>
+          </View>
+          <View style={styles.separator} />
+          <LoadingState />
+        </View>
+      </SafeScreen>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeScreen>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Watchlist</Text>
+          </View>
+          <View style={styles.separator} />
+          <ErrorState error={error} onRetry={handleRetry} />
+        </View>
+      </SafeScreen>
+    );
+  }
 
   return (
     <SafeScreen>

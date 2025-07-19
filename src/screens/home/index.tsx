@@ -1,20 +1,17 @@
-import React, { useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  ActivityIndicator,
-  Text,
-} from 'react-native';
-import { wp, hp } from '../../utils/responsive';
-import Section from '../../components/home/Section';
-import Header from '../../components/home/Header';
-import SafeScreen from '../../components/SafeScreen';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchTopGainersLosersThunk } from '../../store/slice/topGainersLosersSlice';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
+import { fetchTopGainersLosersThunk } from '../../store/slice/topGainersLosersSlice';
+import SafeScreen from '../../components/SafeScreen';
+import Header from '../../components/home/Header';
+import Section from '../../components/home/Section';
+import LoadingState from '../../components/LoadingState';
+import ErrorState from '../../components/ErrorState';
+import { wp, hp } from '../../utils/responsive';
+import NetInfo from '@react-native-community/netinfo';
 
 type RootStackParamList = {
   HomeScreen: undefined;
@@ -50,19 +47,32 @@ const Home = () => {
     navigation.navigate('Details', { stock: item, symbol: item.symbol });
   };
 
-  useEffect(() => {
+  const handleRetry = () => {
     dispatch(fetchTopGainersLosersThunk());
-  }, [dispatch]);
+  };
+
+  useEffect(() => {
+    // Initial data fetch
+    dispatch(fetchTopGainersLosersThunk());
+
+    // Listen for network changes to auto-retry when connection is restored
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const connected = state.isConnected ?? false;
+
+      // If we just got connected and there's an error, retry
+      if (connected && error) {
+        dispatch(fetchTopGainersLosersThunk());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch, error]);
 
   if (loading) {
     return (
       <SafeScreen>
         <Header appName="FinStock" searchPlaceholder="Search here..." />
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ActivityIndicator size="large" color="#007AFF" />
-        </View>
+        <LoadingState />
       </SafeScreen>
     );
   }
@@ -71,11 +81,7 @@ const Home = () => {
     return (
       <SafeScreen>
         <Header appName="FinStock" searchPlaceholder="Search here..." />
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text style={{ color: 'red' }}>{error}</Text>
-        </View>
+        <ErrorState error={error} onRetry={handleRetry} />
       </SafeScreen>
     );
   }
