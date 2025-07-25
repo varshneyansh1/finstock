@@ -93,7 +93,7 @@ const Home = () => {
       isMounted = false;
       unsubscribe();
     };
-  }, [dispatch]); // Removed error from dependencies to prevent infinite loop
+  }, [dispatch]); 
 
   // Show network error if offline and no data
   if (isOnline === false && gainers.length === 0 && losers.length === 0) {

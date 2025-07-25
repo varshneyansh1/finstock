@@ -168,5 +168,4 @@ const detailsSlice = createSlice({
 });
 
 export const { setSelectedRange, resetDetails } = detailsSlice.actions;
-export { fetchDetailsData, fetchChartData };
 export default detailsSlice.reducer;
