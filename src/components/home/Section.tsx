@@ -9,7 +9,6 @@ import {
 import responsive from '../../utils/responsive';
 import StockCard from '../stockCard/StockCard';
 
-
 interface SectionProps {
   title: string;
   data: Array<{

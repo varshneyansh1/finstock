@@ -71,9 +71,25 @@ const ViewAll = () => {
     dispatch(fetchViewAllGainersLosers(type as ViewAllType));
   };
 
-  const handleStockPress = (item: StockItem) => {
-    navigation.navigate('Details', { stock: item, symbol: item.symbol });
-  };
+  const handleStockPress = useCallback(
+    (item: StockItem) => {
+      navigation.navigate('Details', { stock: item, symbol: item.symbol });
+    },
+    [navigation],
+  );
+
+  const renderStockCard = useCallback(
+    ({ item }: { item: StockItem }) => (
+      <StockCard
+        name={item.name}
+        price={item.price}
+        changePercentage={item.changePercentage}
+        symbol={item.symbol}
+        onPress={() => handleStockPress(item)}
+      />
+    ),
+    [handleStockPress],
+  );
 
   return (
     <SafeScreen>
@@ -106,15 +122,7 @@ const ViewAll = () => {
             keyExtractor={item => item.id}
             numColumns={2}
             columnWrapperStyle={styles.row}
-            renderItem={({ item }: { item: StockItem }) => (
-              <StockCard
-                name={item.name}
-                price={item.price}
-                changePercentage={item.changePercentage}
-                symbol={item.symbol}
-                onPress={() => handleStockPress(item)}
-              />
-            )}
+            renderItem={renderStockCard}
             onEndReached={loadMore}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
